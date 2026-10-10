@@ -1,0 +1,56 @@
+{
+  "name": "@mintfolio/theme-glass",
+  "version": "0.3.0",
+  "description": "Glass — a mobile-first Mintfolio theme",
+  "type": "module",
+  "files": [
+    "theme.mjs",
+    "src",
+    "README.md",
+    "DESIGN.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "exports": {
+    "./config": "./src/config/theme-glass.config.mjs",
+    "./settings": "./src/settings.ts",
+    "./theme": "./theme.mjs"
+  },
+  "mintfolio": {
+    "configTemplate": "./src/config/theme-glass.config.mjs"
+  },
+  "peerDependencies": {
+    "@mintfolio/core": "^0.3.0",
+    "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@mintfolio/core": "^0.3.0",
+    "@types/node": "^22.20.2",
+    "astro": "^7.3.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+  },
+  "scripts": {
+    "check": "astro check",
+    "deps:update": "node tools/update-local-deps.mjs"
+  },
+  "license": "GPL-3.0-only",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "simple-liquid-glass": "5.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MintfolioBlog/mintfolio-theme-glass.git"
+  },
+  "homepage": "https://github.com/MintfolioBlog/mintfolio-theme-glass#readme",
+  "bugs": {
+    "url": "https://github.com/MintfolioBlog/mintfolio-theme-glass/issues"
+  }
+}

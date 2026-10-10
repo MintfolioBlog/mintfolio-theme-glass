@@ -1,0 +1,39 @@
+<script>
+  import { onPage } from '@mintfolio/core/client';
+  onPage('body', (body, scope) => {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const material = document.documentElement.classList.contains('material');
+    const running = new Set<Animation>();
+    /** Animate only presentation, preserving visible content if JS is absent. */
+    function animate(element: Element, frames: Keyframe[], duration: number) {
+      if (reduced.matches || scope.signal.aborted) return;
+      const animation = element.animate(frames, { duration, easing: material ? 'cubic-bezier(.2,.8,.2,1)' : 'cubic-bezier(.16,1,.3,1)' });
+      running.add(animation);
+      animation.finished.catch(() => {}).finally(() => running.delete(animation));
+    }
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        observer.unobserve(entry.target);
+        animate(entry.target, [
+          { opacity: 0, transform: 'translateY(14px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ], material ? 420 : 500);
+      }
+    }, { threshold: .08 });
+    for (const element of body.querySelectorAll('.hero-copy,.hero-art,.featured-story,.post-row,.home-note,.page-heading,.article-heading')) observer.observe(element);
+    for (const details of body.querySelectorAll<HTMLDetailsElement>('.navigation-more,.article-toc')) {
+      details.addEventListener('toggle', () => {
+        if (!details.open) return;
+        const panel = details.querySelector('.navigation-sheet,nav');
+        if (panel) animate(panel, [
+          { opacity: .25, transform: 'translateY(8px) scale(.98)', transformOrigin: 'bottom center' },
+          { opacity: 1, transform: 'translateY(0) scale(1)', transformOrigin: 'bottom center' },
+        ], material ? 300 : 360);
+      }, { signal: scope.signal });
+    }
+    function stop() { for (const animation of running) animation.cancel(); running.clear(); }
+    reduced.addEventListener('change', () => { if (reduced.matches) stop(); }, { signal: scope.signal });
+    scope.signal.addEventListener('abort', () => { observer.disconnect(); stop(); }, { once: true });
+  });
+</script>

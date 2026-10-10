@@ -1,0 +1,21 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "**/*.astro",
+    "**/*.ts",
+    "theme.mjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".astro",
+    "vendor",
+    "artifacts",
+    ".preview"
+  ]
+}

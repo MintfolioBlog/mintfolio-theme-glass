@@ -1,0 +1,39 @@
+---
+import type { PageProps, StaticPageData } from '@mintfolio/core/astro';
+import Image from '@mintfolio/core/components/Image.astro';
+import type { GlassSettings } from '../settings';
+import GlassLayout from '../layouts/GlassLayout.astro';
+
+interface Props extends PageProps<GlassSettings, StaticPageData> {}
+const { theme, page } = Astro.props;
+const updated = page.updatedAt ? new Intl.DateTimeFormat(theme.site.language, { dateStyle: 'long', timeZone: theme.site.blog?.timezone ?? 'UTC' }).format(new Date(page.updatedAt)) : undefined;
+---
+<GlassLayout theme={theme} page={page}>
+  <div class="shell inner-page static-page">
+    <header class="page-heading">
+      <p class="eyebrow">{page.id === 'about' ? '关于作者' : '独立页面'}</p>
+      <h1>{page.title}<span class="accent-dot" aria-hidden="true">.</span></h1>
+      <p class="page-description">{page.description}</p>
+      {updated && <p class="post-meta">更新于 <time datetime={page.updatedAt}>{updated}</time></p>}
+    </header>
+    {page.body ? <article class="prose standalone-prose" set:html={page.body.html} /> : page.id === 'about' && <>
+      <section class="profile-intro" aria-labelledby="profile-heading">
+        <div class="profile-image"><Image src={page.profile.avatar} alt={`${page.profile.name}的头像`} width={360} height={360} /></div>
+        <div><p class="eyebrow">你好</p><h2 id="profile-heading">{page.profile.name}</h2><p class="profile-location">{page.profile.location}</p><p class="profile-bio">{page.profile.bio}</p>
+          <nav class="profile-links" aria-label="联系作者">{theme.site.contact.email && <a href={`mailto:${theme.site.contact.email}`}>发送邮件 ↗</a>}{theme.site.social.map((social) => <a href={social.url} rel="me">{social.platform} ↗</a>)}</nav>
+        </div>
+      </section>
+      {theme.site.skills.length > 0 && <section class="profile-section" aria-labelledby="skills-heading">
+        <div class="section-heading"><p class="eyebrow">技能与工具</p><h2 id="skills-heading">日常工具箱</h2></div>
+        <div class="skills-grid">{theme.site.skills.map((group) => <div><h3>{group.category}</h3><ul>{group.items.map((item) => <li>{item.name}</li>)}</ul></div>)}</div>
+      </section>}
+      {theme.site.projects.length > 0 && <section class="profile-section" aria-labelledby="projects-heading">
+        <div class="section-heading"><p class="eyebrow">项目</p><h2 id="projects-heading">做过的事情</h2></div>
+        <div class="project-list">{theme.site.projects.map((project, index) => <article class="project-row">
+          <span class="row-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          <div><h3>{project.title}</h3><p>{project.description}</p><ul class="project-tags">{project.tags.map((tag) => <li>{tag}</li>)}</ul><div class="project-links">{project.link && <a href={project.link}>访问项目 ↗</a>}{project.repo && <a href={project.repo}>查看源码 ↗</a>}</div></div>
+        </article>)}</div>
+      </section>}
+    </>}
+  </div>
+</GlassLayout>

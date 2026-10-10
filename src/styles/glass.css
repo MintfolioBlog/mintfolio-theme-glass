@@ -1,0 +1,142 @@
+@import './structure.css';
+/* Apple HIG: glass belongs to floating navigation, not article content.
+   Opaque surfaces are the baseline; blur is an optional progressive enhancement. */
+.glass {
+  color-scheme: light;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  --touch: 2.75rem; --radius: 1.5rem;
+  --bg: #f5f5f7; --surface: #fff; --text: #1d1d1f; --muted: #616168;
+  --accent: #0065d1; --on-accent: #fff; --tonal: #e8f0fc; --line: #d2d2d7;
+  --glass-fill: rgba(255,255,255,.88); --glass-rim: rgba(255,255,255,.95);
+  --hero-start: #e2ecff; --hero-end: #f5dce8; --hero-ink: #334870;
+}
+.glass[data-appearance="dark"] {
+  color-scheme: dark;
+  --bg: #08090d; --surface: #191b22; --text: #f5f5f7; --muted: #b2b4be;
+  --accent: #82b6ff; --on-accent: #08294d; --tonal: #20334f; --line: #4a4c56;
+  --glass-fill: rgba(28,30,39,.91); --glass-rim: rgba(255,255,255,.24);
+  --hero-start: #263954; --hero-end: #482b49; --hero-ink: #e1eaff;
+}
+@media (prefers-color-scheme: dark) {
+  .glass[data-appearance="system"] {
+    color-scheme: dark;
+    --bg: #08090d; --surface: #191b22; --text: #f5f5f7; --muted: #b2b4be;
+    --accent: #82b6ff; --on-accent: #08294d; --tonal: #20334f; --line: #4a4c56;
+    --glass-fill: rgba(28,30,39,.91); --glass-rim: rgba(255,255,255,.24);
+    --hero-start: #263954; --hero-end: #482b49; --hero-ink: #e1eaff;
+  }
+}
+.glass .site-header { min-height: 5.5rem; }
+.glass .brand-symbol { background: transparent; color: var(--accent); }
+.glass .desktop-navigation { position: sticky; top: max(.75rem,env(safe-area-inset-top)); z-index: 20; display: flex; justify-content: center; flex-wrap: wrap; gap: .25rem; width: fit-content; max-height: 30vh; overflow-y: auto; max-width: calc(100% - 2rem); margin: .5rem auto 0; padding: .4rem; border: 1px solid var(--line); background: var(--surface); border-radius: 2rem; box-shadow: 0 8px 30px #0000000d; }
+.glass .desktop-navigation a { padding-inline: 1.5rem; }
+.glass .home-hero { padding-block: 4rem; grid-template-columns: 1.2fr 1fr; }
+.glass .hero-copy h1 { font-weight: 720; letter-spacing: -.055em; }
+.glass .hero-art { background: linear-gradient(135deg,var(--hero-start),var(--hero-end)); border-radius: 50% 50% 42% 42%; }
+.glass .art-shape { border-radius: 50%; box-shadow: inset 0 1px 1px #fff9, 0 20px 50px #344c7820; }
+.glass .shape-one { width: 15rem; height: 15rem; right: -2rem; top: -2rem; background: linear-gradient(140deg,#ffffffa0,#8eacdd55); }
+.glass .shape-two { width: 12rem; height: 12rem; left: -2rem; top: 5rem; background: linear-gradient(130deg,#ffffff90,#eec2d880); }
+.glass .shape-three { width: 8rem; height: 8rem; right: 3rem; bottom: 1rem; background: linear-gradient(135deg,#ffffffd0,#aec8ed70); }
+.glass .art-caption { color: var(--hero-ink); left: 50%; bottom: 2rem; transform: translateX(-50%); white-space: nowrap; }
+.glass .featured-story { grid-template-columns: 1.15fr 1fr; }
+.glass .feature-abstract { background: linear-gradient(140deg,var(--hero-start),var(--hero-end)); color: var(--hero-ink); }
+.glass .post-rows { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.glass .archive-list .post-rows { grid-template-columns: minmax(0,1fr); }
+.glass .post-row { gap: .75rem; border: 1px solid transparent; }
+.glass .row-number,.glass .row-arrow { display: none; }
+.glass .row-copy h3 { font-size: 1.4rem; }
+.glass .home-note { background: var(--surface); border: 1px solid var(--line); }
+.glass .article-heading { text-align: center; margin-inline: auto; padding-bottom: 2.5rem; }
+.glass .article-heading :is(.eyebrow,.post-meta,.article-tags) { justify-content: center; }
+.glass .article-heading h1 { font-size: clamp(2rem,4.5vw,4rem); }
+.glass .article-body { border: 1px solid var(--line); }
+/* CSS fallback before the optional refraction component loads. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass[data-transparency="on"] :is(.desktop-navigation,.mobile-navigation) {
+    background: var(--glass-fill);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid var(--glass-rim);
+    box-shadow: inset 0 1px 0 var(--glass-rim), 0 8px 32px #0002;
+  }
+}
+/* Filtered ancestors establish containing blocks. The menu is positioned above
+   the navigation itself, not fixed to the viewport, so iOS places it correctly. */
+@media (max-width: 37.49rem) {
+  .glass .home-hero { grid-template-columns: minmax(0,1fr); padding-block: 1.5rem 2rem; }
+  .glass .hero-art { height: 12rem; border-radius: 2rem; }
+  .glass .shape-one { width: 10rem; height: 10rem; }
+  .glass .shape-two { width: 9rem; height: 9rem; top: 2rem; }
+  .glass .shape-three { width: 6rem; height: 6rem; }
+  .glass .featured-story,.glass .post-rows { grid-template-columns: minmax(0,1fr); }
+  .glass .mobile-navigation { left: max(.75rem,env(safe-area-inset-left)); right: max(.75rem,env(safe-area-inset-right)); bottom: max(.75rem,env(safe-area-inset-bottom)); padding: .4rem; border-radius: 2.5rem; border: 1px solid var(--line); }
+  .glass .navigation-sheet { inset-inline: 0; }
+  .glass .mobile-navigation > a[aria-current="page"] { background: var(--tonal); }
+}
+@media (max-width: 37.49rem) and (max-height: 32rem) {
+  .glass .mobile-navigation { position: relative; left: auto; right: auto; bottom: auto; }
+}
+/* OS preferences always override the author's transparency setting. */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  .glass[data-transparency] :is(.desktop-navigation,.mobile-navigation) {
+    background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none;
+    border: 1px solid var(--line); box-shadow: none;
+  }
+}
+@media (prefers-contrast: more) {
+  .glass body { --line: var(--text); --muted: var(--text); }
+  .glass .post-row,.glass .featured-story { border: 1px solid var(--line); }
+}
+@media (max-height: 32rem) {
+  .glass .desktop-navigation { position: relative; top: auto; }
+}
+/* The library lens samples behind chrome, never the labels. Keep the parent
+   unfiltered: a frosted parent would flatten the lens's refraction input. */
+.glass .desktop-navigation[data-refraction],
+.glass .mobile-navigation[data-refraction] {
+  background: transparent !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  border-color: transparent;
+  box-shadow: 0 8px 32px #18244020;
+}
+.glass .optical-surface { position: absolute; inset: 0; z-index: 0; display: block; pointer-events: none; border-radius: inherit; }
+.glass :is(.desktop-navigation,.mobile-navigation)[data-refraction]::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(135deg,#ffffff65,transparent 28%,transparent 70%,#ffffff35);
+  box-shadow: inset 0 1px 1px #fffc, inset 0 -1px 1px #ffffff60;
+}
+.glass :is(.desktop-navigation,.mobile-navigation) > a,
+.glass .navigation-more > summary { position: relative; z-index: 1; }
+.glass .navigation-sheet { z-index: 3; }
+.glass .desktop-navigation { overflow: visible; }
+.glass .desktop-navigation a,
+.glass .mobile-navigation > a,
+.glass .navigation-more summary {
+  text-shadow: 0 1px 8px var(--bg);
+  transition: background-color 180ms ease, transform 380ms cubic-bezier(.2,1.3,.35,1), box-shadow 220ms ease;
+}
+.glass :is(.desktop-navigation a,.mobile-navigation > a,.navigation-more summary):active { transform: scale(.94); }
+.glass :is(.primary-link,.quiet-link) { transition: transform 350ms cubic-bezier(.2,1.2,.3,1), box-shadow 180ms ease; }
+.glass :is(.primary-link,.quiet-link):active { transform: scale(.96); }
+@media (hover:hover) {
+  .glass :is(.desktop-navigation a,.mobile-navigation > a,.navigation-more summary):hover {
+    background: color-mix(in srgb,var(--surface) 55%,transparent);
+    box-shadow: inset 0 1px 1px #ffffffb0, 0 2px 9px #0001;
+    transform: translateY(-1px);
+  }
+  .glass :is(.primary-link,.quiet-link):hover { transform: translateY(-2px); box-shadow: 0 6px 20px #0065d120; }
+}
+/* Underlying color lets edge refraction remain visible before scrolling.
+   Reading surfaces remain opaque. */
+.glass body {
+  background: radial-gradient(ellipse at 18% 0%,var(--hero-start),transparent 38rem),
+    radial-gradient(ellipse at 90% 8%,var(--hero-end),transparent 34rem),var(--bg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass :is(.desktop-navigation a,.mobile-navigation > a,.navigation-more summary,.primary-link,.quiet-link) { transform: none !important; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  .glass .optical-surface { display: none; }
+  .glass :is(.desktop-navigation,.mobile-navigation)[data-refraction] { background: var(--surface) !important; border-color: var(--line); }
+  .glass :is(.desktop-navigation,.mobile-navigation)::after { display: none; }
+}

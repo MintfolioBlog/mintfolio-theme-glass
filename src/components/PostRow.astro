@@ -1,0 +1,22 @@
+---
+import type { PostSummary } from '@mintfolio/core/theme';
+import Meta from './Meta.astro';
+interface Props {
+  post: PostSummary;
+  number: number;
+  language?: string;
+  timezone?: string;
+  heading?: 'h2' | 'h3';
+}
+const { post, number, language, timezone, heading: Heading = 'h3' } = Astro.props;
+---
+<article class="post-row">
+  <span class="row-number" aria-hidden="true">{String(number).padStart(2, '0')}</span>
+  <div class="row-copy">
+    <p class="row-category"><a href={post.category.url}>{post.category.label}</a>{post.pinned && <span class="state-label">置顶</span>}</p>
+    <Heading><a href={post.url}>{post.title}</a></Heading>
+    <p class="row-description">{post.description}</p>
+    <Meta post={post} language={language} timezone={timezone} compact />
+  </div>
+  <span class="row-arrow" aria-hidden="true">↗</span>
+</article>

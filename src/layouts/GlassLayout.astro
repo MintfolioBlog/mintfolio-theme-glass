@@ -1,0 +1,38 @@
+---
+import type { PageProps } from '@mintfolio/core/astro';
+import SeoHead from '@mintfolio/core/components/SeoHead.astro';
+import type { GlassSettings } from '../settings';
+import GlassOptics from '../components/GlassOptics.astro';
+import Motion from '../components/Motion.astro';
+import Navigation from '../components/Navigation.astro';
+import '../styles/glass.css';
+interface Props extends PageProps<GlassSettings> {}
+const { theme, page } = Astro.props;
+---
+<!doctype html>
+<html lang={page.seo.language} class="glass" data-glass-capture={'body' in page && page.body?.kind === 'protected' ? 'off' : 'on'} data-appearance={theme.settings.appearance} data-transparency={theme.settings.transparency ? 'on' : 'off'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <SeoHead seo={page.seo} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳转到主要内容</a>
+    <header class="site-header shell">
+      <a class="site-brand" href={theme.urls.home()}><span class="brand-symbol" aria-hidden="true">✳</span><span>{theme.site.title}</span></a>
+      <a class="header-feed" href={theme.urls.rss()}>订阅 RSS <span aria-hidden="true">↗</span></a>
+    </header>
+    <Navigation theme={theme} page={page} />
+    <main id="main-content" tabindex="-1"><slot /></main>
+    <footer class="site-footer shell">
+      <p class="footer-signature">{theme.site.profile.signature || theme.site.description}</p>
+      <nav class="footer-links" aria-label="社交与订阅">
+        {theme.site.social.map((link) => <a href={link.url} rel="me">{link.platform} ↗</a>)}
+        <a href={theme.urls.rss()}>RSS</a><a href={theme.urls.sitemap()}>Sitemap</a>
+      </nav>
+      <p>© {new Date().getFullYear()} {theme.site.profile.name} · Mintfolio / Glass</p>
+      {theme.site.icp && <p><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">{theme.site.icp}</a></p>}
+    </footer>
+    <Motion /><GlassOptics />
+  </body>
+</html>

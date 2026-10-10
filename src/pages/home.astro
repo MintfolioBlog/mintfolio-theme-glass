@@ -1,0 +1,43 @@
+---
+import type { HomePageData, PageProps } from '@mintfolio/core/astro';
+import Image from '@mintfolio/core/components/Image.astro';
+import type { GlassSettings } from '../settings';
+import GlassLayout from '../layouts/GlassLayout.astro';
+import PostRow from '../components/PostRow.astro';
+import Meta from '../components/Meta.astro';
+interface Props extends PageProps<GlassSettings, HomePageData> {}
+const { theme, page } = Astro.props;
+const [feature, ...recent] = page.posts;
+---
+<GlassLayout theme={theme} page={page}>
+  <section class="home-hero shell" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow">{theme.settings.heroEyebrow}</p>
+      <h1 id="hero-title">{theme.settings.heroTitle || theme.site.title}</h1>
+      <p class="hero-description">{theme.settings.heroDescription || theme.site.description}</p>
+      <div class="hero-actions"><a class="primary-link" href={theme.urls.archive()}>浏览文章 <span aria-hidden="true">→</span></a><a class="quiet-link" href={theme.urls.archive() + '#site-search'}>搜索内容</a></div>
+    </div>
+    <div class="hero-art" aria-hidden="true"><div class="art-shape shape-one"></div><div class="art-shape shape-two"></div><div class="art-shape shape-three"></div><span class="art-caption">STAY CURIOUS.</span></div>
+  </section>
+  <div class="shell home-content">
+    {feature ? <section class="featured-story" aria-labelledby="feature-title">
+      <div class="feature-visual">
+        {feature.cover ? <Image src={feature.cover} alt="" width={1000} height={700} loading="eager" />
+          : <div class="feature-abstract" aria-hidden="true"><span>✳</span><small>一点观察，一篇记录。</small></div>}
+      </div>
+      <div class="feature-copy">
+        <p class="eyebrow">精选阅读</p>
+        <p class="row-category"><a href={feature.category.url}>{feature.category.label}</a>{feature.pinned && <span class="state-label">置顶</span>}</p>
+        <h2 id="feature-title"><a href={feature.url}>{feature.title}</a></h2>
+        <p>{feature.description}</p>
+        <Meta post={feature} language={theme.site.language} timezone={theme.site.blog?.timezone} compact />
+        <a class="primary-link" href={feature.url}>继续阅读 <span aria-hidden="true">→</span></a>
+      </div>
+    </section> : <section class="empty-state"><h2>第一篇故事，即将开始。</h2><p>这里还没有公开文章，欢迎之后回来看看。</p></section>}
+    <section class="latest-section" aria-labelledby="latest-heading">
+      <div class="section-heading"><div><p class="eyebrow">最近更新</p><h2 id="latest-heading">生活里的新发现</h2></div><a class="quiet-link" href={theme.urls.archive()}>查看全部 →</a></div>
+      {recent.length > 0 ? <div class="post-rows">{recent.slice(0,6).map((post,index) => <PostRow post={post} number={index + 2} language={theme.site.language} timezone={theme.site.blog?.timezone} />)}</div> : <p class="empty-caption">更多记录，正在酝酿。</p>}
+    </section>
+    <section class="home-note" aria-label="作者简介"><p class="eyebrow">{theme.site.profile.name}</p><p>{theme.site.profile.bio || theme.site.profile.signature || theme.site.description}</p></section>
+  </div>
+</GlassLayout>

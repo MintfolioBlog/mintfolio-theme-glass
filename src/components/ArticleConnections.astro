@@ -1,0 +1,22 @@
+---
+import type { PostPageData } from '@mintfolio/core/astro';
+import PostRow from './PostRow.astro';
+interface Props { page: PostPageData; language?: string; timezone?: string; }
+const { page, language, timezone } = Astro.props;
+---
+{page.post.series && page.seriesPosts && page.seriesPosts.length > 0 && <section class="series-section" aria-labelledby="series-heading">
+  <div class="section-heading"><p class="eyebrow">系列文章</p><h2 id="series-heading"><a href={page.post.series.url}>{page.post.series.label}</a></h2></div>
+  <ol class="series-list">{page.seriesPosts.map((post, index) => <li>
+    <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+    <a href={post.url} aria-current={post.id === page.post.id ? 'page' : undefined}>{post.title}</a>
+    {post.id === page.post.id && <span class="series-current">正在阅读</span>}
+  </li>)}</ol>
+</section>}
+<nav class="adjacent-posts" aria-label="相邻文章">
+  <div>{page.previous && <a href={page.previous.url}><span class="eyebrow">← 上一篇</span><strong>{page.previous.title}</strong></a>}</div>
+  <div>{page.next && <a href={page.next.url}><span class="eyebrow">下一篇 →</span><strong>{page.next.title}</strong></a>}</div>
+</nav>
+{page.related && page.related.length > 0 && <section class="related-section" aria-labelledby="related-heading">
+  <div class="section-heading"><p class="eyebrow">继续阅读</p><h2 id="related-heading">你可能还想读</h2></div>
+  <div>{page.related.map((post, index) => <PostRow post={post} number={index + 1} language={language} timezone={timezone} />)}</div>
+</section>}
