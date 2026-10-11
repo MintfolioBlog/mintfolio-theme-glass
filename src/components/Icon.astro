@@ -1,0 +1,27 @@
+---
+/**
+ * Inline icon, decorative by default; pass `label` when the icon carries meaning alone.
+ * `name` takes SF Symbols-style names ("doc.text", "house.fill"), drawn by Framework7
+ * Icons; `filled` prefers the filled variant, as a selected tab uses. `brand` is a
+ * Simple Icons slug and wins over `name`. Unknown names fall back to a generic icon.
+ */
+import { brandSvg, symbolSvg, warnMissingIcon } from '../lib/icon-data';
+interface Props { name?: string; brand?: string; filled?: boolean; label?: string; class?: string }
+const { name, brand, filled = false, label, class: className } = Astro.props;
+
+let raw: string | null = null;
+if (brand) {
+  raw = brandSvg(brand);
+  if (!raw) warnMissingIcon('brand', brand);
+}
+if (!raw && name) {
+  raw = symbolSvg(name, filled);
+  if (!raw) warnMissingIcon('symbol', name);
+}
+raw ??= symbolSvg(brand ? 'link' : 'bookmark', filled)!;
+
+const attributes = `class="icon${className ? ' ' + className : ''}" ${label ? `role="img" aria-label="${label.replace(/"/g, '&quot;')}"` : 'aria-hidden="true"'} focusable="false"`;
+// Size comes from CSS (--icon-size); drop the intrinsic 1em size.
+const svg = raw.replace(/ (width|height)="[^"]*"/g, '').replace('<svg ', `<svg ${attributes} `);
+---
+<Fragment set:html={svg} />

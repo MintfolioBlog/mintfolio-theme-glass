@@ -5,33 +5,52 @@ import Pagination from '@mintfolio/core/components/Pagination.astro';
 import type { GlassSettings } from '../settings';
 import GlassLayout from '../layouts/GlassLayout.astro';
 import PostRow from '../components/PostRow.astro';
+import Icon from '../components/Icon.astro';
 
 interface Props extends PageProps<GlassSettings, ListPageData> {}
 const { theme, page } = Astro.props;
 const [tags, categories, series] = await Promise.all([theme.taxonomy.tags(), theme.taxonomy.categories(), theme.taxonomy.series()]);
-const offset = page.pagination ? (page.pagination.current - 1) * page.pagination.pageSize : 0;
+const total = page.pagination?.totalItems ?? page.posts.length;
+const selected = (kind: 'tag' | 'category' | 'series', label: string): boolean => page.taxonomy?.kind === kind && page.taxonomy.label === label;
+const eyebrow = page.taxonomy ? { tag: '标签', category: '分类', series: '系列' }[page.taxonomy.kind] : '全部文章';
 ---
 <GlassLayout theme={theme} page={page}>
-  <div class="shell inner-page">
-    <header class="archive-heading page-heading">
-      <div><p class="eyebrow">全部记录</p><h1>{page.title}<span class="accent-dot" aria-hidden="true">.</span></h1><p class="page-description">{page.description}</p></div>
-      <p class="archive-total"><strong>{String(page.pagination?.totalItems ?? page.posts.length).padStart(2, '0')}</strong><span>篇记录</span></p>
+  <div class="page">
+    <header class="page-header">
+      <p class="page-header__eyebrow t-footnote">{eyebrow} · {total} 篇</p>
+      <h1 class="page-header__title t-large-title" data-large-title>{page.title}</h1>
+      {page.description && <p class="page-header__supporting t-body">{page.description}</p>}
     </header>
-    <div class="archive-workspace">
-      <aside class="archive-sidebar" aria-label="搜索和内容分类">
-        <div class="search-station" id="site-search"><p class="eyebrow">搜索与探索</p><SearchPanel placeholder="搜索文章…" /></div>
-        <nav class="taxonomy-navigation" aria-label="文章分类">
-          <a class="taxonomy-all" href={theme.urls.archive()} aria-current={!page.taxonomy ? 'page' : undefined}>全部文章 <span aria-hidden="true">↗</span></a>
-          {categories.length > 0 && <div class="taxonomy-group"><h2>分类 <span>CATEGORIES</span></h2>{categories.map((term) => <a href={term.url} aria-current={page.taxonomy?.kind === 'category' && page.taxonomy.label === term.label ? 'page' : undefined}><span>{term.label}</span><small>{term.count}</small></a>)}</div>}
-          {tags.length > 0 && <div class="taxonomy-group"><h2>标签 <span>TOPICS</span></h2><div class="topic-links">{tags.map((term) => <a href={term.url} aria-current={page.taxonomy?.kind === 'tag' && page.taxonomy.label === term.label ? 'page' : undefined}>#{term.label}</a>)}</div></div>}
-          {series.length > 0 && <div class="taxonomy-group"><h2>系列 <span>SERIES</span></h2>{series.map((term) => <a href={term.url} aria-current={page.taxonomy?.kind === 'series' && page.taxonomy.label === term.label ? 'page' : undefined}><span>{term.label}</span><small>{term.count}</small></a>)}</div>}
-        </nav>
-      </aside>
-      <section class="archive-list" aria-label="本页文章">
-        {page.posts.length > 0 ? <div class="post-rows">{page.posts.map((post, index) => <PostRow post={post} number={offset + index + 1} language={theme.site.language} timezone={theme.site.blog?.timezone} heading="h2" />)}</div>
-          : <p class="empty-caption">这个分类还没有文章。</p>}
-        {page.pagination && <Pagination pagination={page.pagination} />}
-      </section>
+
+    <div class="filters">
+      <div class="search-block" id="site-search"><SearchPanel placeholder="搜索" /></div>
+      <nav aria-label="分类">
+        <ul class="segmented">
+          <li><a href={theme.urls.archive()} aria-current={!page.taxonomy ? 'page' : undefined}>全部</a></li>
+          {categories.map((term) => <li><a href={term.url} aria-current={selected('category', term.label) ? 'page' : undefined}>{term.label}<small>{term.count}</small></a></li>)}
+        </ul>
+      </nav>
+      {tags.length > 0 && <nav aria-label="标签">
+        <ul class="capsule-set">
+          {tags.map((term) => <li><a class="capsule" href={term.url} aria-current={selected('tag', term.label) ? 'page' : undefined}>{term.label}</a></li>)}
+        </ul>
+      </nav>}
     </div>
+
+    <section class="section" aria-label="本页文章">
+      {page.posts.length > 0
+        ? <ul class="grouped post-list">{page.posts.map((post) => <PostRow post={post} heading="h2" language={theme.site.language} timezone={theme.site.blog?.timezone} />)}</ul>
+        : <ul class="grouped"><li class="row"><span class="row__label secondary">这里还没有文章。</span></li></ul>}
+      {page.pagination && <Pagination pagination={page.pagination} />}
+    </section>
+
+    {series.length > 0 && <section class="section" aria-labelledby="series-heading">
+      <h2 id="series-heading" class="section__header t-footnote">系列</h2>
+      <ul class="grouped" style="--separator-inset: 48px">
+        {series.map((term) => <li><a class="row" href={term.url} aria-current={selected('series', term.label) ? 'page' : undefined}>
+          <Icon name="book" class="row__icon" /><span class="row__label">{term.label}</span><span class="row__value">{term.count}</span><Icon name="chevron.right" class="row__chevron" />
+        </a></li>)}
+      </ul>
+    </section>}
   </div>
 </GlassLayout>

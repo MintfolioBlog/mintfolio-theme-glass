@@ -1,0 +1,21 @@
+---
+/**
+ * Navigation bar (HIG: toolbars). Leading: a Back button on detail pages. Center:
+ * the inline title, shown once the large title scrolls under the bar. Trailing:
+ * toolbar actions. Buttons sit on Liquid Glass; the bar itself has no background,
+ * only a scroll edge effect that blurs and fades content passing beneath it.
+ */
+import GlassButton from './GlassButton.astro';
+interface Props { title: string; back?: { href: string; label: string }; rss: string }
+const { title, back, rss } = Astro.props;
+---
+<header class="nav-bar" data-nav-bar>
+  <span class="nav-bar__edge" aria-hidden="true"></span>
+  <div class="nav-bar__leading">
+    {back && <GlassButton href={back.href} icon="chevron.left" label={back.label} id="nav-bar-back" />}
+  </div>
+  <p class="nav-bar__title t-headline" aria-hidden="true">{title}</p>
+  <div class="nav-bar__trailing">
+    <GlassButton href={rss} icon="logo.rss" label="订阅 RSS" />
+  </div>
+</header>

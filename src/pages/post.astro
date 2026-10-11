@@ -4,37 +4,85 @@ import Image from '@mintfolio/core/components/Image.astro';
 import ProtectedArticle from '@mintfolio/core/components/ProtectedArticle.astro';
 import type { GlassSettings } from '../settings';
 import GlassLayout from '../layouts/GlassLayout.astro';
-import Meta from '../components/Meta.astro';
 import ArticleConnections from '../components/ArticleConnections.astro';
+import Icon from '../components/Icon.astro';
+import { formatDate } from '../lib/format';
 
 interface Props extends PageProps<GlassSettings, PostPageData> {}
 const { theme, page } = Astro.props;
+const { post } = page;
+const language = theme.site.language;
+const timezone = theme.site.blog?.timezone;
 const protectedBody = page.body.kind === 'protected' ? page.body : undefined;
-const headings = page.body.kind === 'public' ? page.body.headings.filter((heading) => heading.depth <= 3) : [];
+const headings = page.body.kind === 'public' ? page.body.headings.filter((heading) => heading.depth === 2 || heading.depth === 3) : [];
+const isUpdated = Boolean(post.updatedAt && post.updatedAt !== post.publishedAt);
 ---
-<GlassLayout theme={theme} page={page}>
-  <div class="shell inner-page article-page">
-    <a class="back-link" href={theme.urls.archive()}>← 返回文章归档</a>
-    <header class="article-heading">
-      <p class="eyebrow"><a href={page.post.category.url}>{page.post.category.label}</a>{page.post.pinned && <span class="state-label">置顶</span>}</p>
-      <h1>{page.post.title}</h1>
-      <p class="article-deck">{page.post.description}</p>
-      <Meta post={page.post} language={theme.site.language} timezone={theme.site.blog?.timezone} />
-      {page.post.tags.length > 0 && <nav class="article-tags" aria-label="文章标签">{page.post.tags.map((tag) => <a href={tag.url}>#{tag.label}</a>)}</nav>}
-    </header>
-    {page.post.cover && <div class="article-cover"><Image src={page.post.cover} alt="" width={1600} height={900} loading="eager" /></div>}
-    <div class:list={['reading-layout', { 'with-toc': headings.length > 0 }]}>
-      <article class="article-body">
-        {page.body.kind === 'public' ? <div class="prose" set:html={page.body.html} />
-          : protectedBody && <div class="prose"><ProtectedArticle body={protectedBody} /></div>}
+<GlassLayout theme={theme} page={page} title={post.title} back={{ href: theme.urls.archive(), label: '返回文章' }}>
+  <div class:list={['page', 'page--reading', { 'with-toc': headings.length > 0, 'with-cover': Boolean(post.cover) }]}>
+    <div class="reading-layout">
+      {/* The reading sheet: an opaque surface that lifts the article off the grouped background. */}
+      <article class="article-sheet">
+        {post.cover && <div class="article-cover"><Image src={post.cover} alt="" width={1600} height={900} loading="eager" /></div>}
+        <header class="article-header">
+          <p class="article-header__eyebrow t-footnote">
+            <a href={post.category.url}>{post.category.label}</a>
+            {post.pinned && <span> · 置顶</span>}
+            {post.preview && <span> · 本地预览</span>}
+          </p>
+          <h1 class="article-header__title" data-large-title>{post.title}</h1>
+          {post.description && <p class="article-header__deck">{post.description}</p>}
+          <p class="article-byline t-subheadline">
+            {post.authors && post.authors.length > 0 && <span class="article-byline__authors">
+              {post.authors.map((author, index) => <Fragment>{index > 0 && '、'}{author.url ? <a href={author.url} rel="author">{author.name}</a> : author.name}</Fragment>)}
+            </span>}
+            <time datetime={post.publishedAt}>{formatDate(post.publishedAt, language, timezone)}</time>
+            {post.readingMinutes !== undefined && <span>{post.readingMinutes} 分钟阅读</span>}
+            {post.protected && <span class="article-byline__lock"><Icon name="lock.fill" />加密</span>}
+          </p>
+        </header>
+
+        {headings.length > 0 && <details class="toc toc--inline" data-toc>
+          <summary><Icon name="list.bullet" />目录<Icon name="chevron.right" class="toc__chevron" /></summary>
+          <nav aria-label="文章目录"><ol>
+            {headings.map((heading) => <li><a class:list={['toc-link', { 'toc-link--nested': heading.depth === 3 }]} href={'#' + encodeURIComponent(heading.slug)}>{heading.text}</a></li>)}
+          </ol></nav>
+        </details>}
+
+        <div class="article-body">
+          {page.body.kind === 'public'
+            ? <div class="prose" set:html={page.body.html} />
+            : protectedBody && <div class="prose"><ProtectedArticle body={protectedBody} /></div>}
+        </div>
+
+        {(post.tags.length > 0 || isUpdated || post.wordCount !== undefined) && <footer class="article-footer">
+          {post.tags.length > 0 && <ul class="capsule-set" aria-label="文章标签">
+            {post.tags.map((tag) => <li><a class="capsule" href={tag.url}>{tag.label}</a></li>)}
+          </ul>}
+          {(isUpdated || post.wordCount !== undefined) && <p class="article-footer__meta t-footnote">
+            {isUpdated && <span>更新于 <time datetime={post.updatedAt}>{formatDate(post.updatedAt!, language, timezone)}</time></span>}
+            {post.wordCount !== undefined && <span>{new Intl.NumberFormat(language).format(post.wordCount)} 字</span>}
+          </p>}
+        </footer>}
       </article>
-      {headings.length > 0 && <aside class="article-sidebar">
-        <details class="article-toc" open>
-          <summary>本页目录</summary>
-          <nav aria-label="文章目录"><ol>{headings.map((heading) => <li class:list={{ 'toc-nested': heading.depth > 2 }}><a href={'#' + encodeURIComponent(heading.slug)}>{heading.text}</a></li>)}</ol></nav>
-        </details>
+
+      {/* Wide windows: the contents float beside the sheet and track the reading position. */}
+      {headings.length > 0 && <aside class="toc-aside" aria-label="本页目录">
+        <nav class="toc toc--panel" aria-label="文章目录" data-toc>
+          <p class="toc__title t-headline"><Icon name="list.bullet" />目录</p>
+          <ol>
+            {headings.map((heading) => <li><a class:list={['toc-link', { 'toc-link--nested': heading.depth === 3 }]} href={'#' + encodeURIComponent(heading.slug)}>{heading.text}</a></li>)}
+          </ol>
+        </nav>
       </aside>}
     </div>
-    <ArticleConnections page={page} language={theme.site.language} timezone={theme.site.blog?.timezone} />
+
+    <div class="article-after">
+      <ArticleConnections page={page} language={language} timezone={timezone} />
+    </div>
   </div>
 </GlassLayout>
+
+<!-- Reading enhancements stay out of home, archive and standalone-page entry points. -->
+<script>
+  import '../scripts/toc';
+</script>

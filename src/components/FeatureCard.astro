@@ -1,0 +1,21 @@
+---
+/**
+ * Featured post as an App Store Today style card: full-bleed artwork, text over a
+ * dark gradient at the bottom, large continuous corners. Without a cover the card
+ * uses a tinted gradient from the accent color.
+ */
+import type { PostSummary } from '@mintfolio/core/theme';
+import Image from '@mintfolio/core/components/Image.astro';
+import { formatDate } from '../lib/format';
+interface Props { post: PostSummary; eyebrow: string; language?: string; timezone?: string }
+const { post, eyebrow, language, timezone } = Astro.props;
+---
+<article class:list={['feature-card', { 'feature-card--plain': !post.cover }]}>
+  {post.cover && <div class="feature-card__art"><Image src={post.cover} alt="" width={1200} height={900} loading="eager" /></div>}
+  <div class="feature-card__text">
+    <p class="feature-card__eyebrow t-footnote">{eyebrow} · {post.category.label}</p>
+    <h2 class="feature-card__title t-title1"><a href={post.url} class="feature-card__link">{post.title}</a></h2>
+    {post.description && <p class="feature-card__summary t-subheadline">{post.description}</p>}
+    <p class="feature-card__meta t-footnote"><time datetime={post.publishedAt}>{formatDate(post.publishedAt, language, timezone)}</time>{post.readingMinutes !== undefined && <span> · {post.readingMinutes} 分钟阅读</span>}</p>
+  </div>
+</article>

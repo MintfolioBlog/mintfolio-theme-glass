@@ -1,0 +1,25 @@
+---
+/**
+ * Capsule button as a real link (HIG: capsules for buttons in a row, 44pt hit region).
+ * Content-layer styles, not glass (HIG: no Liquid Glass in the content layer):
+ * - prominent: tint fill, white label (borderedProminent) — the one most likely action;
+ * - bordered: gray fill, tint label (bordered);
+ * - plain: tint label only.
+ */
+import Icon from './Icon.astro';
+interface Props {
+  href: string;
+  variant?: 'prominent' | 'bordered' | 'plain';
+  icon?: string;
+  brand?: string;
+  trailingIcon?: string;
+  class?: string;
+  rel?: string;
+}
+const { href, variant = 'bordered', icon, brand, trailingIcon, class: className, rel } = Astro.props;
+---
+<a href={href} rel={rel} class:list={['button', `button--${variant}`, className]}>
+  {(icon || brand) && <Icon name={icon} brand={brand} />}
+  <span><slot /></span>
+  {trailingIcon && <Icon name={trailingIcon} />}
+</a>

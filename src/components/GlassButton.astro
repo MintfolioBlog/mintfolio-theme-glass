@@ -1,0 +1,12 @@
+---
+/**
+ * Icon-only toolbar button on Liquid Glass (HIG: toolbar buttons take the glass
+ * appearance; icon-only buttons are circles). 44px circle, the minimum hit region.
+ */
+import Icon from './Icon.astro';
+interface Props { href: string; icon: string; label: string; id?: string; class?: string; rel?: string }
+const { href, icon, label, id, class: className, rel } = Astro.props;
+---
+<a href={href} id={id} rel={rel} class:list={['glass-button', 'glass-surface', className]} aria-label={label} title={label}>
+  <Icon name={icon} />
+</a>

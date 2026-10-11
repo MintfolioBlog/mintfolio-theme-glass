@@ -1,22 +1,29 @@
 ---
+/**
+ * One post as a row of an inset grouped list (HIG: lists and tables). The whole row is
+ * one link with a disclosure chevron; an optional thumbnail sits on the trailing side.
+ */
 import type { PostSummary } from '@mintfolio/core/theme';
-import Meta from './Meta.astro';
-interface Props {
-  post: PostSummary;
-  number: number;
-  language?: string;
-  timezone?: string;
-  heading?: 'h2' | 'h3';
-}
-const { post, number, language, timezone, heading: Heading = 'h3' } = Astro.props;
+import Image from '@mintfolio/core/components/Image.astro';
+import Icon from './Icon.astro';
+import { formatDate } from '../lib/format';
+interface Props { post: PostSummary; heading?: 'h2' | 'h3'; language?: string; timezone?: string }
+const { post, heading: Heading = 'h3', language, timezone } = Astro.props;
 ---
-<article class="post-row">
-  <span class="row-number" aria-hidden="true">{String(number).padStart(2, '0')}</span>
-  <div class="row-copy">
-    <p class="row-category"><a href={post.category.url}>{post.category.label}</a>{post.pinned && <span class="state-label">置顶</span>}</p>
-    <Heading><a href={post.url}>{post.title}</a></Heading>
-    <p class="row-description">{post.description}</p>
-    <Meta post={post} language={language} timezone={timezone} compact />
-  </div>
-  <span class="row-arrow" aria-hidden="true">↗</span>
-</article>
+<li class="post-row">
+  <a class="post-row__link" href={post.url}>
+    <div class="post-row__text">
+      <p class="post-row__meta t-footnote">
+        <span class="post-row__category">{post.category.label}</span>
+        <time datetime={post.publishedAt}>{formatDate(post.publishedAt, language, timezone)}</time>
+        {post.pinned && <span class="post-row__flag"><Icon name="pin.fill" />置顶</span>}
+        {post.protected && <span class="post-row__flag"><Icon name="lock.fill" />加密</span>}
+        {post.preview && <span class="post-row__flag">本地预览</span>}
+      </p>
+      <Heading class="post-row__title t-headline">{post.title}</Heading>
+      {post.description && <p class="post-row__summary t-subheadline">{post.description}</p>}
+    </div>
+    {post.cover && <div class="post-row__thumb"><Image src={post.cover} alt="" width={240} height={240} loading="lazy" /></div>}
+    <Icon name="chevron.right" class="post-row__chevron" />
+  </a>
+</li>

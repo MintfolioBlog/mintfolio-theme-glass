@@ -1,39 +1,65 @@
 ---
 import faviconUrl from '../assets/favicon.svg?url';
+/**
+ * Document shell. Navigation floats on Liquid Glass above the content layer and
+ * persists across client navigation; the content pane animates with iOS push, pop
+ * or cross-fade transitions (scripts/glass.ts). Colors and type follow the HIG
+ * tokens in styles/tokens.css.
+ */
 import type { PageProps } from '@mintfolio/core/astro';
 import SeoHead from '@mintfolio/core/components/SeoHead.astro';
+import { ClientRouter } from 'astro:transitions';
 import type { GlassSettings } from '../settings';
-import GlassOptics from '../components/GlassOptics.astro';
-import Motion from '../components/Motion.astro';
 import Navigation from '../components/Navigation.astro';
-import '../styles/glass.css';
-interface Props extends PageProps<GlassSettings> {}
-const { theme, page } = Astro.props;
+import NavBar from '../components/NavBar.astro';
+import Button from '../components/Button.astro';
+import { socialIcon } from '../lib/icons';
+import '@fontsource-variable/inter/wght.css';
+import '../styles/tokens.css';
+import '../styles/components.css';
+import '../styles/layout.css';
+import '../styles/prose.css';
+interface Props extends PageProps<GlassSettings> {
+  /** Inline navigation bar title, shown once the large title scrolls away. */
+  title?: string;
+  back?: { href: string; label: string };
+}
+const { theme, page, title = page.title, back } = Astro.props;
+const capture = 'body' in page && page.body?.kind === 'protected' ? 'off' : 'on';
 ---
 <!doctype html>
-<html lang={page.seo.language} class="glass" data-glass-capture={'body' in page && page.body?.kind === 'protected' ? 'off' : 'on'} data-appearance={theme.settings.appearance} data-transparency={theme.settings.transparency ? 'on' : 'off'}>
+{/* The root does not cross-fade; only the content pane animates. */}
+<html lang={page.seo.language} class="glass" data-appearance={theme.settings.appearance} data-accent={theme.settings.accentColor}
+  data-transparency={theme.settings.transparency ? 'on' : 'off'} data-glass-capture={capture} transition:animate="none">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <SeoHead seo={page.seo} faviconFallback={faviconUrl} />
+    <ClientRouter />
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳转到主要内容</a>
-    <header class="site-header shell">
-      <a class="site-brand" href={theme.urls.home()}><span class="brand-symbol" aria-hidden="true">✳</span><span>{theme.site.title}</span></a>
-      <a class="header-feed" href={theme.urls.rss()}>订阅 RSS <span aria-hidden="true">↗</span></a>
-    </header>
     <Navigation theme={theme} page={page} />
-    <main id="main-content" tabindex="-1"><slot /></main>
-    <footer class="site-footer shell">
-      <p class="footer-signature">{theme.site.profile.signature || theme.site.description}</p>
-      <nav class="footer-links" aria-label="社交与订阅">
-        {theme.site.social.map((link) => <a href={link.url} rel="me">{link.platform} ↗</a>)}
-        <a href={theme.urls.rss()}>RSS</a><a href={theme.urls.sitemap()}>Sitemap</a>
-      </nav>
-      <p>© {new Date().getFullYear()} {theme.site.profile.name} · Mintfolio / Glass</p>
-      {theme.site.icp && <p><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">{theme.site.icp}</a></p>}
-    </footer>
-    <Motion /><GlassOptics />
+    <div class="app-frame">
+      <NavBar title={title} back={back} rss={theme.urls.rss()} />
+      <div class="app-content" data-page-kind={page.kind}>
+        <main id="main-content" tabindex="-1"><slot /></main>
+        <footer class="site-footer t-footnote">
+          {(theme.site.profile.signature || theme.site.description) && <p class="site-footer__signature t-subheadline">{theme.site.profile.signature || theme.site.description}</p>}
+          <nav class="site-footer__links" aria-label="社交与订阅">
+            {theme.site.social.map((link) => { const { name, brand } = socialIcon(link); return <Button href={link.url} variant="plain" rel="me" icon={name} brand={brand}>{link.platform}</Button>; })}
+            <Button href={theme.urls.rss()} variant="plain" icon="logo.rss">RSS</Button>
+            <Button href={theme.urls.sitemap()} variant="plain">Sitemap</Button>
+          </nav>
+          <p>© {new Date().getFullYear()} {theme.site.profile.name} · Mintfolio / Glass</p>
+          {theme.site.icp && <p><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">{theme.site.icp}</a></p>}
+        </footer>
+      </div>
+    </div>
+    <script>
+      import '../scripts/glass';
+      import '../scripts/optics';
+      import '../scripts/warmup';
+    </script>
   </body>
 </html>

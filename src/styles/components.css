@@ -1,0 +1,310 @@
+/*
+ * Components after the Apple HIG. Liquid Glass is reserved for navigation and
+ * toolbar controls (HIG: materials); the content layer uses grouped lists, cards
+ * and system fills. Values reference styles/tokens.css.
+ */
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+/* A stable gutter keeps layouts from shifting sideways between short and long pages. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scrollbar-gutter: stable; scroll-padding-top: calc(var(--nav-bar-height) + 16px); }
+body {
+  margin: 0; min-height: 100dvh;
+  background: var(--system-grouped-background); color: var(--label);
+  font: var(--type-body); letter-spacing: var(--type-body-tracking);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+:where(h1, h2, h3, h4, p, ol, ul, figure) { margin: 0; }
+:where(h1, h2, h3, h4) { text-wrap: balance; overflow-wrap: anywhere; }
+a { color: inherit; text-decoration: none; }
+img, video, svg { max-width: 100%; }
+img, video { height: auto; }
+::selection { background: color-mix(in srgb, var(--tint) 30%, transparent); }
+/* Keyboard focus ring in the accent color, as Apple platforms draw it. */
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--tint) 70%, transparent); outline-offset: 2px; border-radius: 6px; }
+main:focus { outline: none; }
+.skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; padding: 10px 16px; border-radius: 999px; background: var(--label); color: var(--system-background); transform: translateY(-200%); }
+.skip-link:focus { transform: none; }
+
+.icon { width: var(--icon-size, 20px); height: var(--icon-size, 20px); flex: none; fill: currentColor; }
+
+/* ---------- Text styles (Dynamic Type, default size) ---------- */
+.t-large-title { font: var(--type-large-title); letter-spacing: var(--type-large-title-tracking); font-weight: 700; }
+.t-title1 { font: var(--type-title1); letter-spacing: var(--type-title1-tracking); font-weight: 700; }
+.t-title2 { font: var(--type-title2); letter-spacing: var(--type-title2-tracking); font-weight: 700; }
+.t-title3 { font: var(--type-title3); letter-spacing: var(--type-title3-tracking); font-weight: 600; }
+.t-headline { font: var(--type-headline); letter-spacing: var(--type-headline-tracking); }
+.t-body { font: var(--type-body); letter-spacing: var(--type-body-tracking); }
+.t-callout { font: var(--type-callout); letter-spacing: var(--type-callout-tracking); }
+.t-subheadline { font: var(--type-subheadline); letter-spacing: var(--type-subheadline-tracking); }
+.t-footnote { font: var(--type-footnote); letter-spacing: var(--type-footnote-tracking); }
+.t-caption1 { font: var(--type-caption1); letter-spacing: var(--type-caption1-tracking); }
+.t-caption2 { font: var(--type-caption2); letter-spacing: var(--type-caption2-tracking); }
+.secondary { color: var(--secondary-label); }
+
+/* ---------- Liquid Glass (navigation layer only) ---------- */
+/* Frosted baseline; scripts/optics.ts adds refraction where the engine allows it. */
+.glass-surface {
+  position: relative; isolation: isolate;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-rim), inset 0 0 0 0.5px var(--glass-rim-low), var(--glass-shadow);
+}
+/* With refraction mounted, the optics layer draws the material; keep the host clear. */
+.glass-surface[data-refraction] { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--glass-shadow); }
+.glass-optics, .optical-surface { position: absolute; inset: 0; z-index: 0; display: block; pointer-events: none; border-radius: inherit; }
+.glass-optics { background: var(--glass-clear); }
+/* Specular rim: bright where the light (upper left) meets the edge, faint opposite. */
+.glass-surface[data-refraction]::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--glass-rim) 0%, var(--glass-rim-low) 30%, transparent 50%, var(--glass-rim-low) 75%, var(--glass-rim) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* Content sits above the optics layer; low specificity so component positioning wins. */
+:where(.glass-surface > :not(.glass-optics, .optical-surface)) { position: relative; z-index: 1; }
+/* Opaque bars when the author turns glass off or the visitor asks for less transparency or more contrast. */
+:root[data-transparency="off"] .glass-surface {
+  background: var(--secondary-system-grouped-background); -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass-surface, .glass-surface[data-refraction] {
+    background: var(--secondary-system-grouped-background) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    box-shadow: 0 0 0 1px var(--separator), var(--glass-shadow);
+  }
+  .glass-optics, .optical-surface, .glass-surface[data-refraction]::after { display: none; }
+}
+
+/* Glass toolbar button: 44px circle, icon only. Touch makes the glass swell on a bouncy spring. */
+.glass-button {
+  --icon-size: 20px;
+  display: inline-grid; place-items: center; flex: none;
+  width: var(--hit-min); height: var(--hit-min); border-radius: 999px;
+  color: var(--label);
+  transition: transform var(--spring-bouncy-duration) var(--spring-bouncy);
+}
+.glass-button:active { transform: scale(1.1); }
+
+/* ---------- Content buttons: capsules ---------- */
+.button {
+  --icon-size: 17px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: var(--hit-min); padding: 0 20px; border-radius: 999px;
+  font: 600 15px/20px var(--font-system); letter-spacing: -0.23px;
+  white-space: nowrap;
+  transition: transform var(--spring-snappy-duration) var(--spring-snappy), opacity 150ms ease, background-color 150ms ease;
+}
+.button:active { transform: scale(0.96); opacity: 0.75; }
+.button--prominent { background: var(--tint); color: var(--on-tint); }
+.button--bordered { background: color-mix(in srgb, var(--tint) 14%, transparent); color: var(--tint); }
+.button--plain { color: var(--tint); padding-inline: 10px; font-weight: 400; }
+@media (hover: hover) {
+  .button--prominent:hover { background: color-mix(in srgb, var(--tint) 88%, var(--label)); }
+  .button--bordered:hover { background: color-mix(in srgb, var(--tint) 20%, transparent); }
+  .button--plain:hover { background: var(--quaternary-system-fill); }
+}
+.button-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* Capsule tokens (tags, skills). */
+.capsule {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 30px; padding: 4px 12px;
+  border-radius: 999px; background: var(--tertiary-system-fill); color: var(--label);
+  font: var(--type-subheadline); letter-spacing: var(--type-subheadline-tracking); white-space: nowrap;
+  transition: background-color 150ms ease, transform var(--spring-snappy-duration) var(--spring-snappy);
+}
+a.capsule:active { transform: scale(0.95); }
+@media (hover: hover) { a.capsule:hover { background: var(--secondary-system-fill); } }
+.capsule[aria-current] { background: var(--tint); color: var(--on-tint); }
+.capsule__count { color: var(--secondary-label); }
+.capsule[aria-current] .capsule__count { color: inherit; opacity: 0.8; }
+.capsule-set { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+
+/* Segmented control (HIG: capsule track, selected segment raised). */
+.segmented {
+  display: flex; gap: 2px; padding: 3px; border-radius: 999px; width: fit-content; max-width: 100%;
+  background: var(--tertiary-system-fill); overflow-x: auto; scrollbar-width: none; list-style: none; margin: 0;
+}
+.segmented::-webkit-scrollbar { display: none; }
+.segmented a {
+  display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 16px; border-radius: 999px;
+  font: 500 14px/18px var(--font-system); letter-spacing: -0.15px; white-space: nowrap; color: var(--label);
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+.segmented a[aria-current] { background: var(--secondary-system-grouped-background); box-shadow: 0 2px 8px rgb(0 0 0 / 0.12), 0 0 1px rgb(0 0 0 / 0.1); font-weight: 600; }
+:root[data-appearance="dark"] .segmented a[aria-current] { background: var(--system-gray3); }
+@media (prefers-color-scheme: dark) { :root[data-appearance="system"] .segmented a[aria-current] { background: var(--system-gray3); } }
+.segmented small { color: var(--secondary-label); font-size: 12px; }
+
+/* ---------- Inset grouped lists (HIG: lists and tables) ---------- */
+.grouped {
+  list-style: none; margin: 0; padding: 0; overflow: hidden;
+  border-radius: var(--radius-card); background: var(--secondary-system-grouped-background);
+}
+.grouped > li { position: relative; }
+/* Separators are inset to the text, never full width. */
+.grouped > li + li::before {
+  content: ''; position: absolute; top: 0; right: 0; left: var(--separator-inset, 16px); z-index: 1;
+  border-top: 0.5px solid var(--separator);
+}
+.row {
+  --icon-size: 20px;
+  display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px;
+  font: var(--type-body); letter-spacing: var(--type-body-tracking); color: var(--label);
+  transition: background-color 120ms ease;
+}
+a.row:active, .post-row__link:active { background: var(--system-gray5); transition: none; }
+@media (hover: hover) { a.row:hover, .post-row__link:hover { background: var(--quaternary-system-fill); } }
+.row__icon { color: var(--tint); }
+.row__label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.row__value { color: var(--secondary-label); }
+.row__chevron { --icon-size: 14px; color: var(--tertiary-label); }
+.row__check { --icon-size: 18px; color: var(--tint); }
+.row__index { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 999px; background: var(--tertiary-system-fill); color: var(--secondary-label); }
+.row[aria-current] .row__index { background: var(--tint); color: var(--on-tint); }
+.row[aria-current] .row__label { font-weight: 600; }
+.row--two-line { padding-block: 10px; }
+.row__stack { display: grid; flex: 1; min-width: 0; gap: 2px; }
+.row__caption { color: var(--secondary-label); }
+
+/* Section titles above groups: headers in footnote, bold section titles in title 2. */
+.section { margin-top: 36px; }
+.section__header { padding: 0 16px 8px; color: var(--secondary-label); }
+.section__header a { color: var(--tint); }
+.section__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.section__title { color: var(--label); }
+
+/* ---------- Post rows ---------- */
+.post-list > li + li::before { left: 16px; }
+.post-row__link { display: flex; align-items: center; gap: 14px; padding: 14px 16px; min-width: 0; transition: background-color 120ms ease; }
+.post-row__text { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.post-row__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; color: var(--secondary-label); }
+.post-row__category { color: var(--tint); font-weight: 600; }
+.post-row__flag { --icon-size: 13px; display: inline-flex; align-items: center; gap: 2px; color: var(--system-orange); }
+.post-row__title { color: var(--label); overflow-wrap: anywhere; }
+.post-row__summary { color: var(--secondary-label); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.post-row__thumb { flex: none; width: 72px; height: 72px; border-radius: var(--radius-control); overflow: hidden; background: var(--tertiary-system-fill); }
+.post-row__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.post-row__chevron { --icon-size: 14px; color: var(--tertiary-label); flex: none; }
+
+/* ---------- Today-style feature card ---------- */
+.feature-card {
+  position: relative; display: grid; align-items: end; overflow: hidden; isolation: isolate;
+  min-height: 420px; border-radius: var(--radius-card);
+  background: linear-gradient(150deg, var(--tint), color-mix(in srgb, var(--tint) 55%, black));
+  color: #fff; box-shadow: 0 12px 32px var(--shadow-color);
+  transition: transform var(--spring-snappy-duration) var(--spring-snappy);
+}
+.feature-card:active { transform: scale(0.97); }
+.feature-card__art { position: absolute; inset: 0; z-index: -1; }
+.feature-card__art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.feature-card__art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(0 0 0 / 0) 35%, rgb(0 0 0 / 0.68) 100%); }
+.feature-card__text { display: grid; gap: 6px; padding: 24px; max-width: 640px; }
+.feature-card__eyebrow { text-transform: uppercase; font-weight: 600; opacity: 0.8; }
+.feature-card__title { overflow-wrap: anywhere; }
+.feature-card__link::after { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.feature-card__summary { opacity: 0.85; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.feature-card__meta { opacity: 0.7; }
+.feature-card--plain { min-height: 300px; }
+
+/* ---------- Tab bar (navigation layer) ---------- */
+.tab-bar-region { display: none; }
+.tab-bar { border-radius: 999px; }
+.tab-bar__items { position: relative; z-index: 1; display: flex; list-style: none; margin: 0; padding: 0; }
+.tab-bar__items > li { display: flex; flex: 1 1 0; min-width: 0; }
+.tab {
+  display: flex; flex: 1; align-items: center; justify-content: center; min-width: 0; min-height: var(--hit-min);
+  border-radius: 999px; color: var(--label); cursor: pointer; list-style: none;
+  transition: color 200ms ease, transform var(--spring-bouncy-duration) var(--spring-bouncy);
+}
+.tab::-webkit-details-marker { display: none; }
+.tab:active { transform: scale(1.08); }
+.tab__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab[aria-current] { color: var(--tint); }
+.tab__icon--selected, .tab[aria-current] .tab__icon { display: none; }
+.tab[aria-current] .tab__icon--selected { display: block; }
+/*
+ * The selection is a soft platter under the selected tab. scripts/tab-bar.ts moves it
+ * with springs (stretching with speed) and sets its size and transform inline.
+ */
+.tab-bar__selection {
+  position: absolute; z-index: 1; top: 0; left: 0; width: 0; height: 0; border-radius: 999px; pointer-events: none;
+  background: var(--glass-tint-selected); box-shadow: inset 0 0 0 0.5px var(--glass-rim-low);
+  visibility: hidden; will-change: transform;
+}
+.tab-bar[data-has-selection] .tab-bar__selection { visibility: visible; }
+/* Held and dragged, the selection lifts into a clear lens above the tabs that magnifies them. */
+.tab-bar__lens {
+  position: absolute; z-index: 2; top: 0; left: 0; width: 0; height: 0; border-radius: 999px; pointer-events: none;
+  background: rgb(255 255 255 / 0.04);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.9), inset 0 -1px 1px rgb(255 255 255 / 0.35), inset 0 0 0 0.5px rgb(255 255 255 / 0.5), 0 6px 18px rgb(0 0 0 / 0.18);
+  opacity: 0; visibility: hidden; will-change: transform;
+}
+.tab-bar[data-lens] .tab-bar__lens { visibility: visible; }
+/* Pressing and dragging must not scroll the page, select text or open link callouts. */
+.tab-bar { touch-action: none; -webkit-user-select: none; user-select: none; }
+.tab { -webkit-touch-callout: none; -webkit-user-drag: none; }
+/* While dragging, the tab under the lens shows as selected. */
+.tab-bar[data-dragging] .tab[aria-current]:not([data-lens-over]) { color: var(--label); }
+.tab-bar[data-dragging] .tab[aria-current]:not([data-lens-over]) .tab__icon { display: block; }
+.tab-bar[data-dragging] .tab[aria-current]:not([data-lens-over]) .tab__icon--selected { display: none; }
+.tab-bar[data-dragging] .tab[data-lens-over] { color: var(--tint); }
+.tab-bar[data-dragging] .tab[data-lens-over] .tab__icon { display: none; }
+.tab-bar[data-dragging] .tab[data-lens-over] .tab__icon--selected { display: block; }
+.tab-bar[data-dragging] .tab:active { transform: none; }
+.tab-search { --icon-size: 22px; display: grid; place-items: center; flex: none; border-radius: 999px; color: var(--label); transition: transform var(--spring-bouncy-duration) var(--spring-bouncy); }
+.tab-search:active { transform: scale(1.1); }
+
+/* ---------- Sidebar (navigation layer) ---------- */
+.sidebar { display: none; }
+
+/* ---------- More sheet (HIG: sheets, grabber, grouped content) ---------- */
+.more { display: flex; flex: 1; }
+.sheet-scrim { position: fixed; inset: 0; z-index: 40; background: rgb(0 0 0 / 0.25); }
+.sheet {
+  position: fixed; z-index: 41; inset-inline: 0; bottom: 0; max-width: 560px; margin-inline: auto;
+  max-height: 80dvh; overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom));
+  border-radius: 34px 34px 0 0; background: var(--system-grouped-background); color: var(--label);
+  box-shadow: 0 -8px 40px var(--shadow-color);
+}
+.sheet__grabber { display: block; width: 36px; height: 5px; margin: 6px auto 10px; border-radius: 999px; background: var(--tertiary-label); }
+.sheet__title { text-align: center; margin-bottom: 14px; }
+@media (prefers-reduced-motion: no-preference) {
+  .more[open] .sheet { animation: sheet-in var(--spring-smooth-duration) var(--spring-smooth); }
+  .more[open] .sheet-scrim { animation: fade-in 250ms ease; }
+}
+@keyframes sheet-in { from { transform: translateY(100%); } }
+@keyframes fade-in { from { opacity: 0; } }
+:root[data-sheet-open] { overflow: hidden; }
+
+/* ---------- Navigation bar ---------- */
+.nav-bar {
+  position: sticky; top: 0; z-index: 20;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;
+  height: calc(var(--nav-bar-height) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) var(--layout-margin) 0;
+  pointer-events: none;
+}
+.nav-bar > * { pointer-events: auto; }
+/* Scroll edge effect: content passing under the bar blurs and fades. */
+.nav-bar__edge {
+  position: absolute; inset: 0 0 -28px; z-index: -1; pointer-events: none; opacity: 0;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--scroll-edge, var(--system-grouped-background)) 75%, transparent) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, transparent 100%); mask-image: linear-gradient(180deg, #000 45%, transparent 100%);
+  transition: opacity 250ms ease;
+}
+.nav-bar[data-scrolled] .nav-bar__edge { opacity: 1; }
+.nav-bar__leading { display: flex; justify-content: flex-start; gap: 8px; }
+.nav-bar__trailing { display: flex; justify-content: flex-end; gap: 8px; }
+.nav-bar__title {
+  max-width: 50vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity 250ms ease, transform var(--spring-smooth-duration) var(--spring-smooth);
+}
+.nav-bar[data-title-visible] .nav-bar__title { opacity: 1; transform: none; }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .nav-bar[data-scrolled] .nav-bar__edge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--scroll-edge, var(--system-grouped-background)); -webkit-mask-image: none; mask-image: none; inset: 0; border-bottom: 1px solid var(--separator); }
+}
