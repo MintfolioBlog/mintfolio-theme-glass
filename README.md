@@ -10,10 +10,10 @@
 
 要求 Node.js >= 22.12、Mintfolio Core 0.3.x、Astro 7.3.x。本次发行版本为 0.3.0。
 
-将 artifacts/mintfolio-theme-glass-0.3.1.tgz 复制到你的站点目录，再运行：
+将 artifacts/mintfolio-theme-glass-0.4.0.tgz 复制到你的站点目录，再运行：
 
 ~~~sh
-npm install ./mintfolio-theme-glass-0.3.1.tgz
+npm install ./mintfolio-theme-glass-0.4.0.tgz
 mintfolio theme use @mintfolio/theme-glass
 mintfolio dev
 ~~~
@@ -78,4 +78,4 @@ Chromium 的 SVG 和模拟 iOS 条件的 WebGL 路径已启动。没有 WebKit/i
 主题包与 manifest 统一为 0.3.0，依赖 Mintfolio Core ^0.3.0。可使用 npm install @mintfolio/theme-glass@0.3.0 安装，随后使用 mintfolio theme use @mintfolio/theme-glass 切换。
 
 
-0.3.1：支持 Core 0.4，配置示例采用 `_mintfolio/theme.config.mjs` 的 `settings`。Core 0.3 用户仍按该版本的配置方式使用。
+0.4.0：支持 Core 0.4，配置示例采用 `_mintfolio/theme.config.mjs` 的 `settings`。Core 0.3 用户仍按该版本的配置方式使用。
