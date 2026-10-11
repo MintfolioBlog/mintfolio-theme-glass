@@ -1,84 +1,83 @@
 # Glass
 
-遵循 Apple Liquid Glass HIG 的网页主题，将玻璃效果限制在导航层，正文保持稳定的阅读底色。
+遵循 Apple Human Interface Guidelines 的网页主题。导航和工具栏使用 Liquid Glass，内容层保持稳定的阅读底色：
+
+- iOS 26 系统色，浅色、深色、提高对比度各一套，强调色可选；
+- 字号使用 iOS Dynamic Type 默认档，字距按 SF Pro 字距表设置；
+- 手机上是浮在底部的标签栏，平板上是顶部标签栏，桌面上是浮动侧边栏；
+- 每页有大标题，滚动后在顶部显示小标题；内容采用分组列表、Today 风格卡片和胶囊按钮；
+- 页面切换和 iOS 一样：进入详情页从右侧推入，返回时推出，切换标签时淡入淡出，导航保持不动。
 
 独立 Astro 主题，包含首页、文章页、归档/分类/标签/系列页、Markdown 独立页面、关于页和 404。
 复用 Core 的全文搜索、静态分页、密码文章解锁、SEO、订阅源和站点地图；支持多作者、阅读信息、置顶、系列目录、相关文章和上一篇/下一篇。
-不读取宿主私有内容、不依赖其他主题，无远程字体、CDN 或 UI 框架。
 
 ## 安装
 
-要求 Node.js >= 22.12、Mintfolio Core 0.3.x、Astro 7.3.x。本次发行版本为 0.3.0。
+要求 Node.js >= 22.12、Mintfolio Core `^0.4.2`、Theme API `^1.4.0`、Astro 7.3.x。Core 会安装配套的 Theme API，无需在站点重复声明。
 
-将 artifacts/mintfolio-theme-glass-0.4.0.tgz 复制到你的站点目录，再运行：
+主题使用 Core 0.4.2 的按功能客户端入口；文章目录只在文章页加载，密码文章继续由 Core 的 `ProtectedArticle` 处理，并在实际解锁时加载安全清理库。请同时满足 Core 与 Theme API 的最低版本要求。
 
 ~~~sh
-npm install ./mintfolio-theme-glass-0.4.0.tgz
+npm install ./mintfolio-theme-glass-0.4.1.tgz
 mintfolio theme use @mintfolio/theme-glass
 mintfolio dev
 ~~~
 
-不要把 npm scope 简写为主题目录名。切换后 Core 会在 theme.config.mjs 的 settings 中写入带注释的设置，支持：
+不要把 npm scope 简写为主题目录名。图标、玻璃效果库和 Inter 字体会随主题一起从 npm 安装，不使用 CDN。
+
+## 设置
+
+完整示例见 [examples/theme.config.mjs](examples/theme.config.mjs)：列出全部设置项，逐项注明用途、默认值和可选值，可以直接复制为站点的 `_mintfolio/theme.config.mjs`。
 
 ~~~js
 settings: {
-  appearance: 'system', // system / light / dark
+  appearance: 'system',   // system / light / dark
+  accentColor: 'blue',    // blue / purple / pink / red / orange / yellow / green / mint / teal / cyan / indigo / brown / graphite
+  transparency: true,     // Liquid Glass 导航；false 使用实色导航
+  navigation: [           // 侧边栏 / 标签栏；留空使用站点导航
+    { icon: 'house', url: '/', label: '首页' },
+    { icon: 'doc.text', url: '/blog', label: '文章' },
+    { icon: 'person.crop.circle', url: '/about', label: '关于' },
+  ],
   heroEyebrow: '随想与生活',
-  heroTitle: '记录生活，自有光芒。',
-  heroDescription: '', // 空字符串使用站点描述
-  transparency: true, // false 使用实色导航
+  heroTitle: '',          // 留空使用站点描述（博客 slogan）
+  heroDescription: '',    // 填写了自定义标题时，留空则在标题下显示站点描述
 },
 ~~~
 
-网站资料、导航、文章和分页继续在原有站点配置中维护。首页展示首篇文章和随后最多六篇文章，“查看全部”进入归档。
-手机底部导航固定保留首页、文章和更多；更多菜单完整呈现自定义导航，并提供搜索与 RSS。无需 JavaScript 即可打开菜单、阅读公开文章和使用归档；全文搜索与密码解锁需要 JavaScript。
+- `accentColor` 从 Apple 系统色中选择，用于选中状态、链接和主要按钮；`graphite` 是石墨灰。
+- `navigation` 的 `icon` 使用 SF Symbols 风格的名字，例如 `house`、`doc.text`、`person.crop.circle`、`book`、`tag`、`briefcase`。选中时自动换成 `.fill` 填充样式。
+  - 图标由 [Framework7 Icons](https://framework7.io/icons/) 提供，它按 SF Symbols 的风格绘制，命名也基本一致。SF Symbols 本身的许可证只允许用在 Apple 平台的应用里，不能用于网页。
+  - 名字写错时显示书签图标，构建时会给出提示。
+- `navigation` 留空时使用站点配置中的导航，图标按名称自动匹配，并保证有首页和文章两项。
+- 社交链接按 `icon` 或 `platform` 匹配 Simple Icons 品牌图标（twitter 自动对应 x）。邮件和 RSS 使用系统风格图标；Simple Icons 没有收录的品牌（例如 LinkedIn）显示通用链接图标。
 
-## 移动端实现
+## 导航与布局
 
-- 使用 viewport-fit=cover、safe-area-inset-* 和可缩放视口，不限制用户缩放。
-- 小于 600 CSS px 使用三入口底部导航；其余宽度使用桌面/平板导航。
-- 大字号、长中文标题、长 URL 自动换行，布局列使用 minmax(0,1fr)，媒体宽度受容器约束。
-- 代码块、表格独立滚动，目录在窄屏移到正文前方。搜索输入框最小 16 CSS px。
-- 短横屏窗口取消覆盖正文的固定导航；菜单无需 hover，键盘焦点可见。
-- 独立按钮/导航遵循 44 CSS px 的最小触控目标。正文行内链接保持自然排版。
-- 尊重系统明暗、减少动态效果和高对比度；提供打印布局。
+- 宽度 < 744 CSS px：底部浮动的标签栏，图标在上、文字在下，右侧是独立的搜索按钮。超过 5 个目的地时，最后一项变成“更多”，打开一个底部弹出的列表。
+- 744–1199 CSS px：标签栏移到顶部居中，图标和文字并排，参照 iPadOS。
+- ≥ 1200 CSS px：左侧浮动侧边栏，含站点名、搜索入口和全部目的地，图标使用强调色。
+- 文章页在 ≥ 1440 CSS px 时，目录显示在正文右侧并高亮当前章节；更窄时折叠在正文前面。
+- 标签栏和侧边栏在页面之间保持不动，只有内容区切换；选中块会在标签之间弹性滑动。
 
-Web 的 CSS px 不等同于 Android dp 或 Apple pt，此处为网页交互尺寸适配。平台原生字体通过系统字体栈使用，不分发 Apple 字体文件。
+## 无障碍
 
-## 开发与交付状态
+- 交互目标不小于 44 CSS px；输入框字号 17 px；不限制用户缩放。
+- 系统开启“降低透明度”或“增强对比度”时，导航改为实色；增强对比度时同时换用 HIG 的高对比度系统色。
+- 系统开启“减少动态效果”时，关闭页面切换、弹性动画和触摸涟漪。
+- 支持 forced-colors 和打印。关闭 JavaScript 时所有页面仍可阅读和跳转；全文搜索与密码解锁需要 JavaScript。
 
-源码入口：theme.mjs、src/pages、src/layouts、src/styles、src/settings.ts。
-设计文档、官方来源和 Web 适配边界见 [DESIGN.md](./DESIGN.md)。
+设计依据、规格来源和验证记录见 [DESIGN.md](./DESIGN.md)。
 
-已完成源码、安装包和浏览器预览。新增动效及 Glass 折射的检查记录见 DESIGN.md；未运行 UI 单元测试或真机验证。
-已检查 Chromium 的窄屏布局、菜单和无障碍偏好；Safari 真机兼容性和实际手机性能仍待确认。
+## 开发
 
-已有 lockfile 和 vendor 本地 Core/SDK 归档，可使用 npm ci --ignore-scripts 安装开发依赖。
-需要用户要求检查时执行 npm run check；打包使用 npm pack --ignore-scripts --pack-destination artifacts，不自动触发检查。
-开发依赖更新可使用 tools/update-local-deps.mjs（需要 npm_execpath 指向 npm-cli.js）。
+~~~sh
+npm ci --ignore-scripts
+npm run check
+node tools/springs.mjs   # 重新生成弹簧动画曲线（写入 src/styles/tokens.css）
+~~~
 
-主题采用 GPL-3.0-only。Material/Apple 名称用于说明设计参考，不代表官方出品或认证。
-## 2026-09-15：折射与交互动效更新
-
-接入 simple-liquid-glass 5.3.0 的 Web Component（MIT），由本地构建打包，不加载 CDN。使用可见导航上的一个光学表面：Chromium 使用低强度 SVG shift 位移；其他浏览器在允许捕获时使用 WebGL，失败时保留 CSS 磨砂效果。选择此库是因为它不要求 React，并提供移动端 WebGL 路径。
-导航标签保持在透镜外的独立前景层。采用低强度平滑位移、轻度模糊、高光和短时触按涟漪；没有持续流动的页面动画。
-非 Chromium 的 WebGL 需要对正文生成本地背景快照，长文章、字体和外部媒体可能增加成本或无法完整捕获；不对密码文章启用该捕获路径，减少动态效果时也关闭此路径。
-可见导航切换或页面卸载时销毁旧组件，释放库的资源；关闭透明效果/提高对比度时直接移除组件。
-
-参考：
-- https://github.com/lucaperullo/simple-liquid-glass
-- https://developer.apple.com/design/human-interface-guidelines/motion
-
-已做浏览器运行检查：320px 明暗模式无横向溢出；菜单可展开；减少动态效果后没有活动页面动画；关闭透明后无折射实例；无页面脚本错误。
-Chromium 的 SVG 和模拟 iOS 条件的 WebGL 路径已启动。没有 WebKit/iPhone 真机结果，也没有真实手机帧率结论。
-折射修正：移除在扁长导航中产生重复文字轮廓的 rim 映射，改为 scale=8、lens-strength=0.5 的 shift 映射；触按扰动降至 0.5，WebGL strength 降至 0.035。已在当前浏览器预览检查，未发现脚本错误或手机宽度横向溢出。
-
-## 0.3.0 发行
-
-主题包与 manifest 统一为 0.3.0，依赖 Mintfolio Core ^0.3.0。可使用 npm install @mintfolio/theme-glass@0.3.0 安装，随后使用 mintfolio theme use @mintfolio/theme-glass 切换。
-
-
-0.4.0：支持 Core 0.4，配置示例采用 `_mintfolio/theme.config.mjs` 的 `settings`。Core 0.3 用户仍按该版本的配置方式使用。
+主题采用 GPL-3.0-only。依赖库的许可证见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。Apple、Liquid Glass 和 SF Symbols 是 Apple Inc. 的商标，本主题为社区作品，不代表 Apple 官方出品或认证。
 
 ## 站点 favicon（Core 0.4.1 / Theme API 1.3 起）
 

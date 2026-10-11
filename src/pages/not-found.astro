@@ -3,17 +3,21 @@ import type { NotFoundPageData, PageProps } from '@mintfolio/core/astro';
 import SearchPanel from '@mintfolio/core/components/SearchPanel.astro';
 import type { GlassSettings } from '../settings';
 import GlassLayout from '../layouts/GlassLayout.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
 
 interface Props extends PageProps<GlassSettings, NotFoundPageData> {}
 const { theme, page } = Astro.props;
 ---
-<GlassLayout theme={theme} page={page}>
-  <section class="shell not-found">
-    <p class="eyebrow">页面未找到</p>
-    <div class="lost-number" aria-hidden="true">4<span>0</span>4</div>
-    <h1>{page.title || '暂时找不到这个页面'}</h1>
-    <p>这个地址没有对应的页面。可以返回首页，或者搜索你想读的内容。</p>
-    <div class="hero-actions"><a class="primary-link" href={theme.urls.home()}>返回首页 <span aria-hidden="true">↗</span></a><a class="quiet-link" href={theme.urls.archive()}>浏览文章 →</a></div>
-    <div class="lost-search"><SearchPanel /></div>
+<GlassLayout theme={theme} page={page} title="页面未找到">
+  <section class="page not-found">
+    <Icon name="exclamationmark.triangle" class="not-found__symbol" />
+    <h1 class="t-title1" data-large-title>{page.title || '找不到这个页面'}</h1>
+    <p class="secondary t-body">这个地址没有对应的页面。可以返回首页，或者搜索想读的内容。</p>
+    <div class="button-row">
+      <Button href={theme.urls.home()} variant="prominent" icon="house.fill">返回首页</Button>
+      <Button href={theme.urls.archive()} variant="bordered">浏览文章</Button>
+    </div>
+    <div class="not-found__search"><SearchPanel placeholder="搜索" /></div>
   </section>
 </GlassLayout>

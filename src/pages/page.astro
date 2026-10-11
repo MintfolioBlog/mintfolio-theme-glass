@@ -3,37 +3,68 @@ import type { PageProps, StaticPageData } from '@mintfolio/core/astro';
 import Image from '@mintfolio/core/components/Image.astro';
 import type { GlassSettings } from '../settings';
 import GlassLayout from '../layouts/GlassLayout.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import { formatDate } from '../lib/format';
+import { socialIcon } from '../lib/icons';
 
 interface Props extends PageProps<GlassSettings, StaticPageData> {}
 const { theme, page } = Astro.props;
-const updated = page.updatedAt ? new Intl.DateTimeFormat(theme.site.language, { dateStyle: 'long', timeZone: theme.site.blog?.timezone ?? 'UTC' }).format(new Date(page.updatedAt)) : undefined;
+const updated = page.updatedAt ? formatDate(page.updatedAt, theme.site.language, theme.site.blog?.timezone) : undefined;
+const skills = theme.site.skills.filter((group) => group.items.length > 0);
 ---
 <GlassLayout theme={theme} page={page}>
-  <div class="shell inner-page static-page">
-    <header class="page-heading">
-      <p class="eyebrow">{page.id === 'about' ? '关于作者' : '独立页面'}</p>
-      <h1>{page.title}<span class="accent-dot" aria-hidden="true">.</span></h1>
-      <p class="page-description">{page.description}</p>
-      {updated && <p class="post-meta">更新于 <time datetime={page.updatedAt}>{updated}</time></p>}
+  {page.body ? <div class="page page--reading">
+    <header class="page-header">
+      {page.preview && <p class="page-header__eyebrow t-footnote">本地预览</p>}
+      <h1 class="page-header__title t-large-title" data-large-title>{page.title}</h1>
+      {page.description && <p class="page-header__supporting t-body">{page.description}</p>}
+      {updated && <p class="secondary t-footnote">更新于 <time datetime={page.updatedAt}>{updated}</time></p>}
     </header>
-    {page.body ? <article class="prose standalone-prose" set:html={page.body.html} /> : page.id === 'about' && <>
-      <section class="profile-intro" aria-labelledby="profile-heading">
-        <div class="profile-image"><Image src={page.profile.avatar} alt={`${page.profile.name}的头像`} width={360} height={360} /></div>
-        <div><p class="eyebrow">你好</p><h2 id="profile-heading">{page.profile.name}</h2><p class="profile-location">{page.profile.location}</p><p class="profile-bio">{page.profile.bio}</p>
-          <nav class="profile-links" aria-label="联系作者">{theme.site.contact.email && <a href={`mailto:${theme.site.contact.email}`}>发送邮件 ↗</a>}{theme.site.social.map((social) => <a href={social.url} rel="me">{social.platform} ↗</a>)}</nav>
-        </div>
-      </section>
-      {theme.site.skills.length > 0 && <section class="profile-section" aria-labelledby="skills-heading">
-        <div class="section-heading"><p class="eyebrow">技能与工具</p><h2 id="skills-heading">日常工具箱</h2></div>
-        <div class="skills-grid">{theme.site.skills.map((group) => <div><h3>{group.category}</h3><ul>{group.items.map((item) => <li>{item.name}</li>)}</ul></div>)}</div>
-      </section>}
-      {theme.site.projects.length > 0 && <section class="profile-section" aria-labelledby="projects-heading">
-        <div class="section-heading"><p class="eyebrow">项目</p><h2 id="projects-heading">做过的事情</h2></div>
-        <div class="project-list">{theme.site.projects.map((project, index) => <article class="project-row">
-          <span class="row-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-          <div><h3>{project.title}</h3><p>{project.description}</p><ul class="project-tags">{project.tags.map((tag) => <li>{tag}</li>)}</ul><div class="project-links">{project.link && <a href={project.link}>访问项目 ↗</a>}{project.repo && <a href={project.repo}>查看源码 ↗</a>}</div></div>
-        </article>)}</div>
-      </section>}
-    </>}
-  </div>
+    <article class="prose" set:html={page.body.html} />
+  </div> : <div class="page page--reading">
+    {/* Contact-card layout: the person first, then grouped details. */}
+    <section class="profile" aria-labelledby="profile-heading">
+      <Image class="profile__avatar" src={page.profile.avatar} alt={`${page.profile.name}的头像`} width={208} height={208} />
+      <h1 id="profile-heading" class="t-title1" data-large-title>{page.profile.name}</h1>
+      {page.profile.location && <p class="profile__location t-subheadline">{page.profile.location}</p>}
+      {page.profile.bio && <p class="profile__bio t-body">{page.profile.bio}</p>}
+      <div class="button-row">
+        {theme.site.contact.email && <Button href={`mailto:${theme.site.contact.email}`} variant="prominent" icon="envelope.fill">发送邮件</Button>}
+        {theme.site.social.map((social) => { const { name, brand } = socialIcon(social); return <Button href={social.url} variant="bordered" rel="me" icon={name} brand={brand}>{social.platform}</Button>; })}
+      </div>
+    </section>
+
+    {skills.length > 0 && <section class="section" aria-labelledby="skills-heading">
+      <h2 id="skills-heading" class="section__header t-footnote">技能与工具</h2>
+      <ul class="grouped">
+        {skills.map((group) => <li class="skills__group">
+          <h3 class="t-headline">{group.category}</h3>
+          <ul class="capsule-set">{group.items.map((item) => <li><span class="capsule">{item.name}</span></li>)}</ul>
+        </li>)}
+      </ul>
+    </section>}
+
+    {theme.site.projects.length > 0 && <section class="section" aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="section__header t-footnote">项目</h2>
+      <ul class="grouped">
+        {theme.site.projects.map((project) => <li class="project__body">
+          <h3 class="t-headline">{project.title}</h3>
+          <p class="secondary t-subheadline">{project.description}</p>
+          {project.tags.length > 0 && <ul class="capsule-set">{project.tags.map((tag) => <li><span class="capsule t-footnote">{tag}</span></li>)}</ul>}
+          {(project.link || project.repo) && <div class="project__links">
+            {project.link && <Button href={project.link} variant="plain" icon="arrow.up.right">访问项目</Button>}
+            {project.repo && <Button href={project.repo} variant="plain" brand="github">查看源码</Button>}
+          </div>}
+        </li>)}
+      </ul>
+    </section>}
+
+    {theme.site.contact.email && <section class="section" aria-label="联系方式">
+      <ul class="grouped" style="--separator-inset: 48px">
+        <li><a class="row" href={`mailto:${theme.site.contact.email}`}><Icon name="envelope" class="row__icon" /><span class="row__label">邮件</span><span class="row__value">{theme.site.contact.email}</span></a></li>
+        <li><a class="row" href={theme.urls.rss()}><Icon name="logo.rss" class="row__icon" /><span class="row__label">订阅 RSS</span><Icon name="chevron.right" class="row__chevron" /></a></li>
+      </ul>
+    </section>}
+  </div>}
 </GlassLayout>

@@ -1,48 +1,107 @@
 ---
+/**
+ * Navigation on Liquid Glass, adapting like a sidebarAdaptable tab view (HIG: tab bars, sidebars):
+ * - iPhone-sized windows (below 744px): tab bar floating at the bottom, symbol above label,
+ *   plus a separate search button at the trailing end;
+ * - iPad-sized windows (744px to 1199px): tab bar near the top, symbol beside label;
+ * - wide windows (1200px and up): floating sidebar on the leading side.
+ * At most five tabs show (HIG: avoid overflow); further destinations go to a More list,
+ * a native details element so it works without JavaScript.
+ */
 import type { PageProps } from '@mintfolio/core/astro';
 import type { GlassSettings } from '../settings';
+import Icon from './Icon.astro';
+import { navigationIcon } from '../lib/icons';
 interface Props extends PageProps<GlassSettings> {}
 const { theme, page } = Astro.props;
 const home = theme.urls.home();
 const archive = theme.urls.archive();
+const searchHref = archive + '#site-search';
+
+// Core normalizes authored links against Astro base exactly once.
+const withBase = (url: string): string => theme.urls.asset(url);
+// Only the trailing path slash is equivalent: filters, fragments and origins still differ.
+const destinationKey = (url: string): string => {
+  try {
+    const parsed = new URL(url, theme.site.url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return url;
+    return parsed.origin + parsed.pathname.replace(/\/+$/u, '') + parsed.search + parsed.hash;
+  } catch { return url; }
+};
+const homeKey = destinationKey(home);
+const archiveKey = destinationKey(archive);
+const configured = theme.settings.navigation
+  .filter((item) => item.url.trim() && item.label.trim())
+  .map((item) => ({ label: item.label.trim(), url: withBase(item.url.trim()), icon: item.icon.trim() }));
+const links = configured.length > 0 ? configured : theme.navigation.map((link) => ({ label: link.label, url: link.url, icon: '' }));
+if (configured.length === 0) {
+  if (!links.some((link) => destinationKey(link.url) === homeKey)) links.unshift({ label: '首页', url: home, icon: '' });
+  if (!links.some((link) => destinationKey(link.url) === archiveKey)) links.splice(1, 0, { label: '文章', url: archive, icon: '' });
+}
+// Posts and taxonomy pages keep their parent section selected.
+const sectionUrl = page.kind === 'post' || page.kind === 'archive' ? archive : page.url;
+const sectionKey = destinationKey(sectionUrl);
+const pageKey = destinationKey(page.url);
+const destinations = links.map((link) => {
+  const key = destinationKey(link.url);
+  const iconUrl = key === homeKey ? home : key === archiveKey ? archive : link.url;
+  return {
+    ...link,
+    icon: link.icon || navigationIcon({ ...link, url: iconUrl }, { home, archive }),
+    selected: key === sectionKey || key === pageKey,
+  };
+});
+const TAB_LIMIT = 5;
+const overflow = destinations.length > TAB_LIMIT;
+const tabs = overflow ? destinations.slice(0, TAB_LIMIT - 1) : destinations;
+const more = overflow ? destinations.slice(TAB_LIMIT - 1) : [];
 ---
-<nav class="desktop-navigation" aria-label="网站导航">
-  {theme.navigation.map((link) => <a href={link.url} aria-current={link.url === page.url ? 'page' : undefined}>{link.label}</a>)}
+{/* Persisted across client navigation; scripts/glass.ts copies the selection from each new page. */}
+<nav class="tab-bar-region" aria-label="网站导航" data-navigation="tabs" transition:persist="glass-tab-bar">
+  <div class="tab-bar glass-surface" data-glass-surface="tabs">
+    <span class="tab-bar__selection" aria-hidden="true"></span>
+    <ul class="tab-bar__items">
+      {tabs.map((item) => <li>
+        <a class="tab" href={item.url} data-nav-url={item.url} aria-current={item.selected ? 'page' : undefined}>
+          <Icon name={item.icon} class="tab__icon" /><Icon name={item.icon} filled class="tab__icon tab__icon--selected" />
+          <span class="tab__label">{item.label}</span>
+        </a>
+      </li>)}
+      {overflow && <li>
+        <details class="more" data-more>
+          <summary class="tab" data-nav-url="more" aria-current={more.some((item) => item.selected) ? 'page' : undefined}>
+            <Icon name="ellipsis" class="tab__icon" /><Icon name="ellipsis" class="tab__icon tab__icon--selected" />
+            <span class="tab__label">更多</span>
+          </summary>
+          <div class="sheet-scrim" data-sheet-scrim aria-hidden="true"></div>
+          <div class="sheet" role="group" aria-label="更多">
+            <span class="sheet__grabber" aria-hidden="true"></span>
+            <p class="sheet__title t-headline">更多</p>
+            <ul class="grouped">
+              {more.map((item) => <li><a class="row" href={item.url} data-nav-url={item.url} aria-current={item.selected ? 'page' : undefined}>
+                <Icon name={item.icon} class="row__icon" /><span class="row__label">{item.label}</span><Icon name="chevron.right" class="row__chevron" />
+              </a></li>)}
+            </ul>
+          </div>
+        </details>
+      </li>}
+    </ul>
+    {/* Press and hold, then drag: the selection lifts into this lens (scripts/tab-bar.ts). */}
+    <span class="tab-bar__lens" aria-hidden="true"></span>
+  </div>
+  <a class="tab-search glass-surface" data-glass-surface="search" href={searchHref} aria-label="搜索文章" title="搜索文章"><Icon name="search" /></a>
 </nav>
-<nav class="mobile-navigation" aria-label="网站导航">
-  <a href={home} aria-current={page.url === home ? 'page' : undefined}>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z" /></svg><span>首页</span>
-  </a>
-  <a href={archive} aria-current={page.url === archive ? 'page' : undefined}>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" /><path d="M8 8h8M8 12h8M8 16h5" /></svg><span>文章</span>
-  </a>
-  <details class="navigation-more">
-    <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg><span>更多</span></summary>
-    <div class="navigation-sheet">
-      <p class="eyebrow">探索网站</p>
-      {theme.navigation.map((link) => <a href={link.url} aria-current={link.url === page.url ? 'page' : undefined}>{link.label}</a>)}
-      <a href={archive + '#site-search'}>搜索文章</a>
-      <a href={theme.urls.rss()}>订阅 RSS</a>
-    </div>
-  </details>
+
+<nav class="sidebar glass-surface" aria-label="网站导航" data-navigation="sidebar" data-glass-surface="sidebar" transition:persist="glass-sidebar">
+  <a class="sidebar__title t-title3" href={home}>{theme.site.title}</a>
+  <a class="sidebar__search" href={searchHref}><Icon name="search" /><span>搜索</span></a>
+  <ul class="sidebar__items">
+    {destinations.map((item) => <li>
+      <a class="sidebar__item" href={item.url} data-nav-url={item.url} aria-current={item.selected ? 'page' : undefined}>
+        <Icon name={item.icon} class="sidebar__icon" /><Icon name={item.icon} filled class="sidebar__icon sidebar__icon--selected" />
+        <span>{item.label}</span>
+      </a>
+    </li>)}
+  </ul>
+  <a class="sidebar__footer t-footnote" href={theme.urls.rss()}><Icon name="logo.rss" />订阅 RSS</a>
 </nav>
-<script>
-  import { onPage } from '@mintfolio/core/client';
-  // Native details remains usable without JS; enhancement adds conventional
-  // Escape/outside dismissal. Core releases listeners on page disposal.
-  onPage('.navigation-more', (root, scope) => {
-    const details = root as HTMLDetailsElement;
-    const summary = details.querySelector('summary');
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && details.open) {
-        details.open = false;
-        summary?.focus();
-      }
-    }, { signal: scope.signal });
-    document.addEventListener('pointerdown', (event) => {
-      if (details.open && event.target instanceof Node && !details.contains(event.target)) {
-        details.open = false;
-      }
-    }, { signal: scope.signal });
-  });
-</script>

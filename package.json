@@ -5,6 +5,7 @@
   "type": "module",
   "files": [
     "theme.mjs",
+    "examples",
     "src",
     "README.md",
     "DESIGN.md",
@@ -20,12 +21,12 @@
     "configTemplate": "./src/config/theme-glass.config.mjs"
   },
   "peerDependencies": {
-    "@mintfolio/core": "^0.4.1",
+    "@mintfolio/core": "^0.4.2",
     "astro": "^7.3.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "@mintfolio/core": "^0.4.1",
+    "@mintfolio/core": "^0.4.2",
     "@types/node": "^22.20.2",
     "astro": "^7.3.2",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
@@ -43,7 +44,11 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "simple-liquid-glass": "5.3.0"
+    "@fontsource-variable/inter": "^5.3.0",
+    "@iconify-json/f7": "^1.2.2",
+    "@iconify/utils": "^3.1.7",
+    "simple-icons": "^16.34.0",
+    "simple-liquid-glass": "5.4.0"
   },
   "repository": {
     "type": "git",

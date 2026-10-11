@@ -1,8 +1,18 @@
 # Third-party notices
 
-Page renderer wiring and metadata components adapt Mintfolio Theme Nebula, GPL-3.0-only, Mintfolio contributors. Theme CSS and navigation SVG paths are authored for this package. Design documents are linked for reference; official logos, fonts and native UI assets are not redistributed. Material Design and Apple Liquid Glass remain their respective owners' names. This is an independent community theme.
+Page renderer wiring adapts Mintfolio Theme Nebula, GPL-3.0-only, Mintfolio contributors.
+Design values (system colors, type sizes, tracking) are transcribed from Apple's Human Interface
+Guidelines for reference. No Apple fonts, SF Symbols or other Apple assets are redistributed;
+Apple, Liquid Glass and SF Symbols are trademarks of Apple Inc. This is an independent community
+theme and is not made, endorsed or certified by Apple.
 
-## simple-liquid-glass 5.3.0
+Packages installed from npm alongside the theme keep their own licenses:
+
+- `@iconify-json/f7` — Framework7 Icons, MIT, Vladimir Kharlampidi; rendered with `@iconify/utils` (MIT). Only the icons used are inlined into pages at build time.
+- `simple-icons` — brand logos for social links, CC0-1.0. Brand marks remain trademarks of their owners.
+- `@fontsource-variable/inter` — Inter, SIL Open Font License 1.1, The Inter Project Authors. Used only where the system has no San Francisco font.
+
+## simple-liquid-glass 5.4.0
 Web Component dependency: https://github.com/lucaperullo/simple-liquid-glass. Includes its MIT license and upstream notices below.
 MIT License
 

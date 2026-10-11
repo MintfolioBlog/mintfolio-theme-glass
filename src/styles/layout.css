@@ -1,0 +1,337 @@
+/* Page structure by window width, page patterns and transitions. */
+
+/* ---------- iPhone-sized: tab bar floats at the bottom, symbol above label ---------- */
+@media (max-width: 743.98px) {
+  .tab-bar-region {
+    position: fixed; z-index: 30; display: flex; gap: 8px; align-items: center;
+    left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .tab-bar { flex: 1; min-width: 0; height: var(--tab-bar-height); padding: 4px; }
+  .tab-bar__items { height: 100%; }
+  .tab { flex-direction: column; gap: 1px; padding: 4px 2px; --icon-size: 24px; }
+  .tab__label { font: 600 10px/12px var(--font-system); letter-spacing: 0.1px; max-width: 100%; }
+  .tab-search { width: var(--tab-bar-height); height: var(--tab-bar-height); }
+  .app-content { padding-bottom: calc(var(--tab-bar-height) + 28px + env(safe-area-inset-bottom)); }
+}
+/* Short landscape phones: keep the bar in flow so it never covers the keyboard or content. */
+@media (max-width: 743.98px) and (max-height: 480px) {
+  .tab-bar-region { position: relative; left: auto; right: auto; bottom: auto; margin: 12px 16px; }
+  .app-content { padding-bottom: 0; }
+}
+
+/* ---------- iPad-sized: tab bar near the top, symbol beside label ---------- */
+@media (min-width: 744px) and (max-width: 1199.98px) {
+  .tab-bar-region {
+    position: fixed; z-index: 30; display: flex; gap: 8px; align-items: center;
+    top: calc(env(safe-area-inset-top) + 4px); left: 50%; transform: translateX(-50%);
+    max-width: calc(100vw - 2 * (var(--hit-min) + 2 * var(--layout-margin)));
+  }
+  .tab-bar { height: var(--hit-min); padding: 3px; }
+  /* The 44px bar is the hit region; tabs fill it inside the padding. */
+  .tab-bar__items { height: 100%; }
+  .tab { min-height: 0; }
+  /* Tabs size to their labels here, as on iPad; they only shrink when the bar runs out of room. */
+  .tab-bar__items > li { flex: 0 1 auto; }
+  .tab { gap: 6px; padding: 0 16px; --icon-size: 18px; }
+  .tab__label { font: 600 15px/20px var(--font-system); letter-spacing: -0.23px; }
+  .tab-search { width: var(--hit-min); height: var(--hit-min); }
+  /* The tab bar owns the center of the top row here, so the inline title stays hidden. */
+  .nav-bar__title { visibility: hidden; }
+}
+
+/* ---------- Wide: floating sidebar ---------- */
+@media (min-width: 1200px) {
+  .sidebar {
+    position: fixed; z-index: 30; display: flex; flex-direction: column; gap: 4px;
+    top: 10px; bottom: 10px; left: max(10px, env(safe-area-inset-left)); width: var(--sidebar-width);
+    padding: 20px 12px 12px; border-radius: 26px; overflow-y: auto; scrollbar-width: none;
+  }
+  .sidebar__title { padding: 0 10px 10px; color: var(--label); overflow-wrap: anywhere; }
+  .sidebar__search {
+    --icon-size: 16px; display: flex; align-items: center; gap: 6px; min-height: 36px; margin: 0 4px 10px; padding: 0 10px;
+    border-radius: 999px; background: var(--tertiary-system-fill); color: var(--secondary-label);
+    font: var(--type-body); letter-spacing: var(--type-body-tracking);
+  }
+  .sidebar__items { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .sidebar__item {
+    --icon-size: 22px; display: flex; align-items: center; gap: 12px; min-height: var(--hit-min); padding: 0 12px;
+    border-radius: 999px; color: var(--label); font: var(--type-body); letter-spacing: var(--type-body-tracking);
+    transition: background-color 150ms ease;
+  }
+  .sidebar__icon { color: var(--tint); }
+  .sidebar__icon--selected, .sidebar__item[aria-current] .sidebar__icon { display: none; }
+  .sidebar__item[aria-current] .sidebar__icon--selected { display: block; }
+  .sidebar__item[aria-current] { background: var(--glass-tint-selected); font-weight: 600; }
+  @media (hover: hover) { .sidebar__item:not([aria-current]):hover { background: var(--quaternary-system-fill); } }
+  .sidebar__footer { --icon-size: 16px; display: flex; align-items: center; gap: 8px; margin-top: auto; padding: 10px 12px; color: var(--secondary-label); }
+  /* Content runs beneath the floating sidebar, so the gutter only reserves its width. */
+  .app-frame { padding-left: calc(var(--sidebar-width) + 20px + env(safe-area-inset-left)); }
+}
+
+/* ---------- Frame ---------- */
+.app-frame { min-width: 0; }
+.page {
+  width: 100%; max-width: calc(var(--content-max) + 2 * var(--layout-margin)); margin-inline: auto;
+  padding: 0 max(var(--layout-margin), env(safe-area-inset-right)) 48px max(var(--layout-margin), env(safe-area-inset-left));
+}
+.page--reading { max-width: calc(var(--reading-max) + 2 * var(--layout-margin)); }
+
+/* Large title header (HIG: large titles transition to the inline title on scroll). */
+.page-header { display: grid; gap: 6px; padding: 4px 0 20px; }
+.page-header__eyebrow { color: var(--secondary-label); text-transform: uppercase; font-weight: 600; }
+.page-header__row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.page-header__title { color: var(--label); overflow-wrap: anywhere; }
+.page-header__supporting { color: var(--secondary-label); max-width: 40em; }
+.page-header .button-row { margin-top: 12px; }
+.avatar-link { flex: none; width: 40px; height: 40px; border-radius: 999px; overflow: hidden; box-shadow: 0 0 0 0.5px var(--separator); }
+.avatar-link img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ---------- Home ---------- */
+@media (min-width: 744px) { .feature-card { min-height: 460px; } .feature-card__text { padding: 32px; } }
+
+/* ---------- Archive ---------- */
+.filters { display: grid; gap: 14px; margin-bottom: 8px; }
+/* Grid children must be able to shrink, or the scrolling capsule row widens the whole page. */
+.filters > * { min-width: 0; }
+.filters .capsule-set { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--layout-margin)); padding-inline: var(--layout-margin); }
+@media (min-width: 744px) { .filters .capsule-set { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; } }
+.search-block { scroll-margin-top: calc(var(--nav-bar-height) + 16px); }
+
+/* ---------- Article ---------- */
+/*
+ * Reading sheet, after Apple News and Safari Reader: the article sits on an opaque
+ * surface above the grouped background (white in light mode, the elevated gray in
+ * dark mode), so it never blends into the page around it.
+ * - iPhone width: the sheet spans the window from the top edge; a cover runs under
+ *   the navigation bar and its glass buttons.
+ * - Wider: a rounded card holding the reading column; the contents float beside it
+ *   once there is room.
+ * Series, neighbours and related posts follow below, on the grouped background.
+ */
+.page--reading {
+  --sheet-pad: 20px;
+  --sheet-radius: 28px;
+  max-width: calc(var(--reading-max) + 2 * var(--sheet-pad) + 2 * var(--layout-margin));
+}
+.reading-layout > * { min-width: 0; }
+.article-sheet {
+  /* Grouped surfaces inside the sheet (tables, the password card) step one level up. */
+  --inset-surface: var(--tertiary-system-grouped-background);
+  position: relative; min-width: 0;
+  padding: 0 var(--sheet-pad) 32px;
+  background: var(--secondary-system-grouped-background);
+}
+.article-cover { margin: 0 calc(-1 * var(--sheet-pad)); overflow: hidden; background: var(--tertiary-system-fill); }
+.article-cover img { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 560px; object-fit: cover; }
+
+.article-header { display: grid; gap: 12px; padding: 24px 0; border-bottom: 0.5px solid var(--separator); }
+.article-header__eyebrow { color: var(--secondary-label); font-weight: 600; }
+.article-header__eyebrow a { color: var(--tint); }
+.article-header__title { font: var(--type-title1); letter-spacing: var(--type-title1-tracking); font-weight: 700; color: var(--label); overflow-wrap: anywhere; }
+.article-header__deck { font: var(--type-body); letter-spacing: var(--type-body-tracking); line-height: 1.55; color: var(--secondary-label); }
+.article-byline { display: flex; flex-wrap: wrap; align-items: center; row-gap: 4px; margin-top: 4px; color: var(--secondary-label); }
+.article-byline > * + *::before { content: '·'; margin-inline: 8px; color: var(--tertiary-label); }
+.article-byline__authors { color: var(--label); font-weight: 600; }
+.article-byline__authors a { color: inherit; }
+.article-byline__lock { --icon-size: 13px; display: inline-flex; align-items: center; gap: 4px; }
+.article-byline__lock::before { margin-inline-end: 8px; }
+
+.article-body { padding-top: 28px; }
+.article-body .prose > :first-child { margin-top: 0; }
+.article-footer { display: grid; gap: 14px; margin-top: 40px; padding-top: 20px; border-top: 0.5px solid var(--separator); }
+.article-footer__meta { display: flex; flex-wrap: wrap; color: var(--secondary-label); }
+.article-footer__meta > * + *::before { content: '·'; margin-inline: 8px; color: var(--tertiary-label); }
+
+/* Contents. Inline: a collapsed list between the header and the body. */
+.toc-aside { display: none; }
+.toc--inline { margin-top: 20px; border-radius: 16px; background: var(--inset-surface); --separator-inset: 16px; }
+.toc > summary { --icon-size: 15px; display: flex; align-items: center; gap: 10px; min-height: var(--hit-min); padding: 0 16px; cursor: pointer; list-style: none; font: var(--type-headline); letter-spacing: var(--type-headline-tracking); }
+.toc > summary::-webkit-details-marker { display: none; }
+.toc > summary .toc__chevron { margin-left: auto; color: var(--tertiary-label); transition: transform var(--spring-snappy-duration) var(--spring-snappy); }
+.toc[open] > summary .toc__chevron { transform: rotate(90deg); }
+.toc ol { list-style: none; margin: 0; padding: 0 0 8px; }
+.toc-link { display: block; padding: 7px 16px; border-radius: 10px; color: var(--secondary-label); font: var(--type-subheadline); letter-spacing: var(--type-subheadline-tracking); transition: color 150ms ease, background-color 150ms ease; }
+.toc-link--nested { padding-left: 30px; }
+.toc-link[aria-current] { color: var(--tint); font-weight: 600; }
+@media (hover: hover) { .toc-link:hover { color: var(--label); } }
+
+/* iPhone width: full-width sheet from the top edge, rounded off where the article ends. */
+@media (max-width: 743.98px) {
+  .article-sheet {
+    margin: calc(-1 * (var(--nav-bar-height) + env(safe-area-inset-top))) calc(-1 * max(var(--layout-margin), env(safe-area-inset-left))) 0;
+    padding-top: calc(var(--nav-bar-height) + env(safe-area-inset-top));
+    border-radius: 0 0 var(--sheet-radius) var(--sheet-radius);
+    box-shadow: var(--sheet-shadow);
+  }
+  .with-cover .article-sheet { padding-top: 0; }
+  /* Authors get their own line, so a wrapped byline never starts with a separator. */
+  .article-byline__authors { width: 100%; }
+  .article-byline__authors + *::before { content: none; }
+  /* The scroll edge effect fades into the sheet, not the grouped background. */
+  .app-frame:has(.page--reading) { --scroll-edge: var(--secondary-system-grouped-background); }
+}
+
+/* Wider windows: a card. */
+@media (min-width: 744px) {
+  .page--reading { --sheet-pad: 48px; }
+  .article-sheet { border-radius: var(--sheet-radius); box-shadow: var(--sheet-shadow); padding-bottom: 40px; }
+  .with-cover .article-cover { border-radius: var(--sheet-radius) var(--sheet-radius) 0 0; }
+  .page--reading:not(.with-cover) .article-header { padding-top: 40px; }
+  .article-header { padding-top: 32px; padding-bottom: 28px; }
+  .article-header__title { font: var(--type-large-title); letter-spacing: var(--type-large-title-tracking); font-weight: 700; }
+  .article-header__deck { font-size: 19px; }
+}
+@media (min-width: 1200px) { .page--reading { --sheet-pad: 56px; } }
+
+/* Room beside the sheet: the contents become a floating panel tracking the reading position. */
+@media (min-width: 1440px) {
+  .page--reading.with-toc { max-width: calc(var(--reading-max) + 2 * var(--sheet-pad) + 28px + 248px + 2 * var(--layout-margin)); }
+  .with-toc .reading-layout { display: grid; grid-template-columns: minmax(0, 1fr) 248px; gap: 28px; align-items: start; }
+  .with-toc .toc--inline { display: none; }
+  /* Sticks where it starts, level with the top of the sheet. */
+  .with-toc .toc-aside { display: block; position: sticky; top: calc(var(--nav-bar-height) + env(safe-area-inset-top)); }
+  .toc--panel {
+    max-height: calc(100dvh - var(--nav-bar-height) - 32px); overflow-y: auto; scrollbar-width: none;
+    padding: 14px 6px 8px; border-radius: 22px;
+    background: var(--secondary-system-grouped-background); box-shadow: var(--sheet-shadow);
+  }
+  .toc__title { --icon-size: 15px; display: flex; align-items: center; gap: 8px; padding: 0 10px 8px; color: var(--label); }
+  .toc--panel .toc-link { padding-inline: 10px; }
+  .toc--panel .toc-link--nested { padding-left: 24px; }
+  .toc--panel .toc-link[aria-current] { background: color-mix(in srgb, var(--tint) 10%, transparent); }
+  .with-toc .article-after { margin-right: calc(248px + 28px); }
+}
+
+/* ---------- About ---------- */
+.profile { display: grid; justify-items: center; gap: 6px; padding: 8px 0 8px; text-align: center; }
+.profile__avatar { width: 104px; height: 104px; border-radius: 999px; object-fit: cover; margin-bottom: 8px; box-shadow: 0 6px 20px var(--shadow-color); }
+.profile__location { color: var(--secondary-label); }
+.profile__bio { max-width: 36em; margin-top: 4px; }
+.profile .button-row { justify-content: center; margin-top: 14px; }
+.project__links { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 0 -10px; }
+.project__body { display: grid; gap: 6px; padding: 14px 16px; }
+.skills__group { display: grid; gap: 10px; padding: 14px 16px; }
+
+/* ---------- 404 ---------- */
+.not-found { display: grid; justify-items: center; gap: 10px; padding-block: 48px; text-align: center; }
+.not-found__symbol { --icon-size: 64px; color: var(--tertiary-label); margin-bottom: 8px; }
+.not-found .button-row { justify-content: center; margin-top: 10px; }
+.not-found__search { width: min(100%, 520px); margin-top: 24px; text-align: start; }
+
+/* ---------- Footer ---------- */
+.site-footer {
+  display: grid; justify-items: center; gap: 8px; text-align: center;
+  max-width: calc(var(--content-max) + 2 * var(--layout-margin)); margin: 24px auto 0;
+  padding: 24px var(--layout-margin) 32px; color: var(--secondary-label);
+}
+.site-footer__signature { color: var(--secondary-label); }
+.site-footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0; }
+.site-footer__links .button { --icon-size: 15px; font-size: 13px; }
+
+/* ---------- Core widgets: search field and pagination ---------- */
+.glass .mintfolio-search__form > label,
+:root.glass .mintfolio-search .mintfolio-search__form > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+:root.glass .mintfolio-search .mintfolio-search__controls { gap: 8px; align-items: center; }
+/* HIG search field: capsule, gray fill, magnifying glass leading. */
+:root.glass .mintfolio-search .mintfolio-search__form input {
+  height: 40px; padding: 0 14px 0 36px; border: 0; border-radius: 999px;
+  background: var(--tertiary-system-fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238e8e93'%3E%3Cpath d='M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6a1 1 0 0 1-1.4 1.4l-4.6-4.6A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z'/%3E%3C/svg%3E") no-repeat 12px 50% / 17px;
+  color: var(--label); font: var(--type-body); letter-spacing: var(--type-body-tracking);
+}
+:root.glass .mintfolio-search .mintfolio-search__form input::placeholder { color: var(--placeholder-text); }
+:root.glass .mintfolio-search .mintfolio-search__form button { min-height: 40px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--tint); font: var(--type-body); letter-spacing: var(--type-body-tracking); }
+:root.glass .mintfolio-search .mintfolio-search__form :is(input, button):focus-visible { outline: 3px solid color-mix(in srgb, var(--tint) 60%, transparent); outline-offset: 1px; }
+:root.glass .mintfolio-search .mintfolio-search__status { color: var(--secondary-label); font: var(--type-footnote); padding-inline: 4px; }
+:root.glass .mintfolio-search .mintfolio-search__results { gap: 0; border-radius: var(--radius-card); overflow: hidden; background: var(--secondary-system-grouped-background); }
+:root.glass .mintfolio-search .mintfolio-search__results:empty { display: none; }
+:root.glass .mintfolio-search .mintfolio-search__results .mintfolio-search__result { border: 0; border-radius: 0; background: transparent; padding: 12px 16px; }
+:root.glass .mintfolio-search .mintfolio-search__results .mintfolio-search__result + .mintfolio-search__result { border-top: 0.5px solid var(--separator); }
+:root.glass .mintfolio-search .mintfolio-search__results .mintfolio-search__link { color: var(--label); font: var(--type-headline); letter-spacing: var(--type-headline-tracking); }
+:root.glass .mintfolio-search .mintfolio-search__results .mintfolio-search__excerpt { color: var(--secondary-label); font: var(--type-subheadline); }
+:root.glass .mintfolio-pagination.mintfolio-pagination :is(a, span) { min-height: var(--hit-min); min-width: var(--hit-min); border: 0; font: var(--type-body); }
+:root.glass .mintfolio-pagination.mintfolio-pagination [aria-disabled="true"] { color: var(--tertiary-label); opacity: 1; }
+
+/* ---------- Content transitions (iOS navigation) ---------- */
+/*
+ * scripts/glass.ts sets data-nav-motion before each client navigation and
+ * data-nav-transition while one runs. The content pane is an opaque sheet that starts
+ * under the navigation bar and fills the window, so a pushed page fully covers the
+ * one beneath it, which slides aside and dims.
+ */
+.app-content {
+  view-transition-name: glass-content;
+  min-height: 100dvh;
+  margin-top: calc(-1 * (var(--nav-bar-height) + env(safe-area-inset-top)));
+  padding-top: calc(var(--nav-bar-height) + env(safe-area-inset-top));
+  background: var(--system-grouped-background);
+}
+/*
+ * Layer order while a transition runs: content, then the navigation bar, then the tab
+ * bar, search button and sidebar, which never get covered. Those three keep showing
+ * their live state (the selection keeps sliding); a capture has no backdrop, so the
+ * group itself supplies the glass blur.
+ */
+/*
+ * Named only while a transition runs: a view-transition-name makes an element a
+ * backdrop root, which would leave the glass inside it nothing to refract.
+ */
+:root[data-nav-transition] .nav-bar { view-transition-name: glass-nav-bar; }
+:root[data-nav-transition] .tab-bar { view-transition-name: glass-tabs; }
+:root[data-nav-transition] .tab-search { view-transition-name: glass-tab-search; }
+:root[data-nav-transition] .sidebar { view-transition-name: glass-sidebar; }
+/* Clipped to the pane so a page sliding aside never shows around the floating sidebar. */
+::view-transition-group(glass-content) { z-index: 1; animation: none; overflow: clip; }
+::view-transition-group(glass-nav-bar) { z-index: 2; animation: none; }
+::view-transition-group(glass-tabs), ::view-transition-group(glass-tab-search), ::view-transition-group(glass-sidebar) {
+  z-index: 3; animation: none; border-radius: 999px;
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+}
+::view-transition-group(glass-sidebar) { border-radius: 26px; }
+/*
+ * For the half second of a transition the bars use plain blur: refraction would be
+ * recomputed on every frame as pages slide beneath them. Their own optics layers sample
+ * nothing inside a capture, so they are switched off too.
+ */
+:root[data-nav-transition] .glass-optics { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+/* Opaque pages slide over one another: normal blending, not the cross-fade's plus-lighter. */
+::view-transition-old(glass-content), ::view-transition-new(glass-content) { mix-blend-mode: normal; }
+::view-transition-old(glass-tabs), ::view-transition-old(glass-tab-search), ::view-transition-old(glass-sidebar) { animation: none; opacity: 0; }
+::view-transition-new(glass-tabs), ::view-transition-new(glass-tab-search), ::view-transition-new(glass-sidebar) { animation: none; mix-blend-mode: normal; }
+@media (prefers-reduced-motion: no-preference) {
+  /* Push: the new page slides in from the trailing edge over the old, which moves a third aside and dims. */
+  :root[data-nav-motion="push"]::view-transition-new(glass-content) { animation: push-in var(--spring-push-duration) var(--spring-push) both; box-shadow: -8px 0 24px var(--shadow-color); }
+  :root[data-nav-motion="push"]::view-transition-old(glass-content) { animation: push-out var(--spring-push-duration) var(--spring-push) both; }
+  /* Pop: the reverse; the leaving page stays on top. */
+  :root[data-nav-motion="pop"]::view-transition-old(glass-content) { z-index: 1; animation: pop-out var(--spring-push-duration) var(--spring-push) both; box-shadow: -8px 0 24px var(--shadow-color); }
+  :root[data-nav-motion="pop"]::view-transition-new(glass-content) { animation: pop-in var(--spring-push-duration) var(--spring-push) both; }
+  /* Switching tabs cross-fades. */
+  :root[data-nav-motion="fade"]::view-transition-old(glass-content) { animation: fade-out 120ms ease both; }
+  :root[data-nav-motion="fade"]::view-transition-new(glass-content) { animation: fade-in 200ms ease 40ms both; }
+  /* Bar buttons and the inline title cross-fade in place. */
+  ::view-transition-old(glass-nav-bar) { animation: fade-out 150ms ease both; }
+  ::view-transition-new(glass-nav-bar) { animation: fade-in 200ms ease both; }
+}
+@keyframes push-in { from { transform: translateX(100%); } }
+@keyframes push-out { to { transform: translateX(-30%); filter: brightness(var(--push-dim)); } }
+@keyframes pop-out { to { transform: translateX(100%); } }
+@keyframes pop-in { from { transform: translateX(-30%); filter: brightness(var(--push-dim)); } }
+@keyframes fade-out { to { opacity: 0; } }
+
+/* ---------- Accessibility & print ---------- */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+@media (forced-colors: active) {
+  .grouped, .glass-surface, .capsule, .button, .segmented a[aria-current], .tab[aria-current], .sidebar__item[aria-current] { border: 1px solid CanvasText; }
+}
+@media print {
+  .tab-bar-region, .sidebar, .nav-bar, .site-footer, .toc-aside, .related, .skip-link { display: none !important; }
+  .app-frame { padding: 0 !important; }
+  .app-content { min-height: 0; margin: 0; padding: 0 !important; background: none; }
+  body { background: #fff; color: #000; }
+  .page { max-width: none; padding: 0; }
+  .article-sheet { margin: 0; padding: 0; box-shadow: none; background: none; }
+  .toc { display: none; }
+}
