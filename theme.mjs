@@ -1,7 +1,7 @@
 import { defineTheme } from '@mintfolio/core/theme';
 export default defineTheme({
   manifest: {
-    id: 'glass', name: 'Glass', version: '0.4.2', engine: '^1.4.0',
+    id: 'glass', name: 'Glass', version: '0.4.3', engine: '^1.4.0',
     author: 'Mintfolio contributors', description: '遵循 Apple Human Interface Guidelines 的 Liquid Glass 网页主题：系统色、Dynamic Type、浮动标签栏与侧边栏。'
   },
   capabilities: { encryptedPosts: true, search: true, tags: true, categories: true, toc: true, darkMode: true },
